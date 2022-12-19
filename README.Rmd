@@ -1,0 +1,38 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# eaTools
+
+<!-- badges: start -->
+```{r, echo = FALSE, results='asis'}
+cat(
+	badger::badge_codefactor("https://github.com/NINAnor/eaTools")
+)
+```
+<!-- badges: end -->
+
+The goal of eaTools is to provide tools for creating ecosystem accounts.
+
+
+## Installation
+
+You can install the development version of eaTools from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("NINAnor/eaTools")
+```
+
+
