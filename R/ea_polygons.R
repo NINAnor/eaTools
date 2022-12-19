@@ -8,4 +8,4 @@
 #'   \item{column2}{Describe column here . . .}
 
 #'
-"ea_polygons"
+"ex_polygons"

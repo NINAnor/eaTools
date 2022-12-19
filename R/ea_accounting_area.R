@@ -5,4 +5,4 @@
 #' @format An sf object
 
 #'
-"ea_accounting_area"
+"accounting_area"

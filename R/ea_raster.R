@@ -4,4 +4,4 @@
 #'
 #' @format A stars object with 40 rows and 34 column(s)
 #'
-"ea_raster"
+"ex_raster"
