@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# eaTools
+# eaTools <img src='inst/figures/myHexSticker.png' align="right" height="139" />
 
 <!-- badges: start -->
 ```{r, echo = FALSE, results='asis'}
