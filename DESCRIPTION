@@ -13,3 +13,6 @@ URL: https://ninanor.github.io/eaTools/
 Imports: 
     sf,
     stars
+Depends: 
+    R (>= 2.10)
+LazyData: true
