@@ -1,13 +1,15 @@
 Package: eaTools
-Title: What the Package Does (One Line, Title Case)
+Title: Tools for Ecosystem Accounting
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Anders", "Kolstad", , "anders.kolstad@nina.no", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-9623-9491"))
+Description: This package contains functions to process mainly spatial data and produce output for an ecosystem account. The main focus is on Ecosystem Condition Accounts - scaling and agrgegating indicators.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 URL: https://ninanor.github.io/eaTools/
+Imports: 
+    sf,
+    stars
