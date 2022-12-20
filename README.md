@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# eaTools <img src='man/figures/myHexSticker.png' align="right" height="139" />
+# eaTools <img src='man/figures/logo.png' align="right" height="139" />
 
 <!-- badges: start -->
 
