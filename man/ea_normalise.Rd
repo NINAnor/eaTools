@@ -4,20 +4,34 @@
 \alias{ea_normalise}
 \title{ea_normalise}
 \usage{
-ea_normalise(x, scaling_function = "linear")
+ea_normalise(
+  data = NULL,
+  vector = NULL,
+  upper_reference_level = NULL,
+  lower_reference_level = 0,
+  scaling_function = "linear"
+)
 }
 \arguments{
-\item{x}{numerical vector to be normalised}
-
 \item{scaling_function}{one of c("linear", "exponential)}
+
+\item{x}{numerical vector to be normalised}
 }
 \value{
 numerical vector, a normalised version of \code{x}
 }
 \description{
-A function to normalise, or re-scale, a numerical vector such as a condition to become a value between 0 and 1, bound by an upper reference level.
+A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value between 0 and 1, bound by an upper reference level.
 }
 \examples{
+#get example data (an sf object)
 data("ex_polygons")
-ea_normalise(ex_polygons$condition_variable_1)
+hist(ex_polygons$condition_variable_1,
+     main="", xlab="Condition variable 1")
+
+# Normalise using static upper reference value
+hist(ea_normalise(data = ex_polygons,
+                  vector = "condition_variable_1",
+                  upper_reference_level = 10),
+     main="", xlab="Indicator value")
 }
