@@ -34,10 +34,14 @@
 
   dat <- as.data.frame(data)
 
+
   if(any(class(data) == "sf")){
     if(scaling_function == "linear"){
       indicator <- (dat[,vector] - lower_reference_level)/
         (upper_reference_level - lower_reference_level)
+      indicator[indicator > 1] <- 1
+      indicator[indicator < 0] <- 0
+
     }
   }
 
