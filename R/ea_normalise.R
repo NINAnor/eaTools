@@ -28,11 +28,15 @@
                           lower_reference_level = 0,
                           scaling_function = "linear",
                           reverse = FALSE,
-                          break_point = NULL){
+                          break_point = NULL,
+                          optimum = NULL){
 
 
   if(!any(class(data) %in% c("sf")))
     stop("Data is in an unsupported format")
+
+  if(!is_empty(break_point) & !is_empty(optimum))
+    stop("Two-sided normalisation with defined break points is not yet supported.")
 
   dat <- as.data.frame(data)
 
@@ -49,6 +53,14 @@
                ((dat[,vector] - break_point)/
                   (upper_reference_level - break_point))*(1-0.6)+0.6
                )
+      }
+      if(!is_empty(optimum)){
+        indicator <- ifelse(dat[,vector] < optimum,
+                      (dat[,vector] - lower_reference_level)/
+                        (optimum - lower_reference_level),
+                      ((dat[,vector] - optimum)/
+                        (upper_reference_level - optimum))*(-1)+1
+                            )
       }
         indicator[indicator > 1] <- 1
         indicator[indicator < 0] <- 0
