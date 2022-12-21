@@ -38,6 +38,11 @@
   if(!is_empty(break_point) & !is_empty(optimum))
     stop("Two-sided normalisation with defined break points is not yet supported.")
 
+   if(!is_empty(break_point) &
+      scaling_function %in% c("exponential convex",
+                              "exponential concave"))
+     stop("Break point normalisation is not supported with exponential a scaling function")
+
   "%!in%" <- Negate("%in%")
   if(scaling_function %!in% c("linear", "sigmoid", "exponential convex", "exponential concave"))
     stop("Unknown scaling function")
