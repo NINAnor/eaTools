@@ -26,7 +26,9 @@
                           vector = NULL,
                           upper_reference_level = NULL,
                           lower_reference_level = 0,
-                          scaling_function = "linear"){
+                          scaling_function = "linear",
+                          reverse = FALSE,
+                          break_point = NULL){
 
 
   if(!any(class(data) %in% c("sf")))
@@ -37,11 +39,22 @@
 
   if(any(class(data) == "sf")){
     if(scaling_function == "linear"){
-      indicator <- (dat[,vector] - lower_reference_level)/
-        (upper_reference_level - lower_reference_level)
-      indicator[indicator > 1] <- 1
-      indicator[indicator < 0] <- 0
-
+      if(rlang::is_empty(break_point)){
+        indicator <- (dat[,vector] - lower_reference_level)/
+          (upper_reference_level - lower_reference_level)
+      } else{
+        indicator <- ifelse(dat[,vector] < break_point,
+               ((dat[,vector] - lower_reference_level)/
+                 (break_point - lower_reference_level))*0.6,
+               ((dat[,vector] - break_point)/
+                  (upper_reference_level - break_point))*(1-0.6)+0.6
+               )
+      }
+        indicator[indicator > 1] <- 1
+        indicator[indicator < 0] <- 0
+    }
+    if(reverse == TRUE){
+      indicator <- indicator*(-1)+1
     }
   }
 
