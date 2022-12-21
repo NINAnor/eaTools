@@ -10,6 +10,12 @@
     <loc>https://ninanor.github.io/eaTools/LICENSE.html</loc>
   </url>
   <url>
+    <loc>https://ninanor.github.io/eaTools/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ninanor.github.io/eaTools/articles/normalise-condition-variable.html</loc>
+  </url>
+  <url>
     <loc>https://ninanor.github.io/eaTools/authors.html</loc>
   </url>
   <url>
@@ -19,6 +25,9 @@
     <loc>https://ninanor.github.io/eaTools/reference/accounting_area.html</loc>
   </url>
   <url>
+    <loc>https://ninanor.github.io/eaTools/reference/ea_normalise.html</loc>
+  </url>
+  <url>
     <loc>https://ninanor.github.io/eaTools/reference/ex_polygons.html</loc>
   </url>
   <url>
@@ -26,8 +35,5 @@
   </url>
   <url>
     <loc>https://ninanor.github.io/eaTools/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://ninanor.github.io/eaTools/reference/myMean.html</loc>
   </url>
 </urlset>
