@@ -39,7 +39,7 @@
     stop("Two-sided normalisation with defined break points is not yet supported.")
 
   "%!in%" <- Negate("%in%")
-  if(scaling_function %!in% c("linear", "sigmoid"))
+  if(scaling_function %!in% c("linear", "sigmoid", "exponential convex", "exponential concave"))
     stop("Unknown scaling function")
 
   dat <- as.data.frame(data)
@@ -71,7 +71,13 @@
         indicator <- 100.68*(1-exp(-5*indicator^2.5))/100
         indicator[indicator > 1] <- 1
         indicator[indicator < 0] <- 0
-      }
+    }
+    if(scaling_function == "exponential convex"){
+      indicator <- indicator^0.5
+    }
+    if(scaling_function == "exponential concave"){
+      indicator <- indicator^2
+    }
 
     if(reverse == TRUE){
       indicator <- indicator*(-1)+1
