@@ -38,22 +38,17 @@
   if(!is_empty(break_point) & !is_empty(optimum))
     stop("Two-sided normalisation with defined break points is not yet supported.")
 
+  "%!in%" <- Negate("%in%")
+  if(scaling_function %!in% c("linear", "sigmoid"))
+    stop("Unknown scaling function")
+
   dat <- as.data.frame(data)
 
 
   if(any(class(data) == "sf")){
-    if(scaling_function == "linear"){
-      if(rlang::is_empty(break_point)){
-        indicator <- (dat[,vector] - lower_reference_level)/
-          (upper_reference_level - lower_reference_level)
-      } else{
-        indicator <- ifelse(dat[,vector] < break_point,
-               ((dat[,vector] - lower_reference_level)/
-                 (break_point - lower_reference_level))*0.6,
-               ((dat[,vector] - break_point)/
-                  (upper_reference_level - break_point))*(1-0.6)+0.6
-               )
-      }
+    if(rlang::is_empty(break_point)){
+      indicator <- (dat[,vector] - lower_reference_level)/
+        (upper_reference_level - lower_reference_level)
       if(!is_empty(optimum)){
         indicator <- ifelse(dat[,vector] < optimum,
                       (dat[,vector] - lower_reference_level)/
@@ -62,9 +57,22 @@
                         (upper_reference_level - optimum))*(-1)+1
                             )
       }
+    } else{
+      indicator <- ifelse(dat[,vector] < break_point,
+             ((dat[,vector] - lower_reference_level)/
+               (break_point - lower_reference_level))*0.6,
+             ((dat[,vector] - break_point)/
+                (upper_reference_level - break_point))*(1-0.6)+0.6
+             )
+    }
+    indicator[indicator > 1] <- 1
+    indicator[indicator < 0] <- 0
+    if(scaling_function == "sigmoid"){
+        indicator <- 100.68*(1-exp(-5*indicator^2.5))/100
         indicator[indicator > 1] <- 1
         indicator[indicator < 0] <- 0
-    }
+      }
+
     if(reverse == TRUE){
       indicator <- indicator*(-1)+1
     }
