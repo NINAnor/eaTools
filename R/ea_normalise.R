@@ -10,17 +10,21 @@
 #' @param reverse Logical. Should the indicator values be reversed (i.e. giving a high variable value a low indicator value)
 #' @param break_point Numerical vector or single value indicating the value of the variable which should be scaled to 0.6 in the indicator.
 #' @param optimum Numerical vector or single value indicating the upper reference value for a two-sided indicator.
+#' @param plot Logical. Wheter to return a plot comparing normalised and raw values, or to return the normalised values (default).
 #'
-#' @return numerical vector, a normalised version of `x`
+#' @return If plot = TRUE return a ggplot comparing normalised and raw values. If plot = False return the numerical vector, a normalised version of `vetcor`
 #'
 #' @importFrom rlang is_empty
+#' @importFrom ggridges geom_density_ridges_gradient
+#' @import ggplot2
 #' @export
 #'
 #' @examples
 #' data("ex_polygons")
-#' hist(ea_normalise(data = ex_polygons,
+#' ea_normalise(data = ex_polygons,
 #'             vector = "condition_variable_2",
-#'             upper_reference_level = 8))
+#'             upper_reference_level = 8,
+#'             plot=TRUE)
  ea_normalise <- function(data = NULL,
                           vector = NULL,
                           upper_reference_level = NULL,
@@ -28,7 +32,8 @@
                           scaling_function = "linear",
                           reverse = FALSE,
                           break_point = NULL,
-                          optimum = NULL){
+                          optimum = NULL,
+                          plot = FALSE){
 
 
   if(!any(class(data) %in% c("sf")))
@@ -88,7 +93,34 @@
     }
   }
 
-  return(indicator)
+  if(plot==FALSE)
+    return(indicator)
+  if(plot==TRUE){
+    low <- "red"
+    high <- "green"
+    ridge <- ggridges::geom_density_ridges_gradient(scale = 3, size = .3)
+    myColour <- "black"
+    mySize <- 8
+    myAlpha <- .7
+    myShape <- 21
+
+    dat$indicator <- indicator
+    ggOut <- ggplot(dat, aes(x = dat[,vector],
+                     y = indicator,
+                    fill = indicator))+
+      geom_point(
+        colour = myColour,
+        size   = mySize,
+        alpha  = myAlpha,
+        shape  = myShape)+
+      ylab("Indicator values")+
+      xlab("Variable values")+
+      scale_fill_gradient("Indicator values", low = low, high = high)+
+      scale_x_continuous(expand = expansion(mult = c(.2)))+
+      scale_y_continuous(expand = expansion(mult = c(.2)))+
+      guides(fill="none")
+    ggOut
+  }
 
 }
 

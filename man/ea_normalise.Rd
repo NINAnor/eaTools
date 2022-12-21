@@ -12,7 +12,8 @@ ea_normalise(
   scaling_function = "linear",
   reverse = FALSE,
   break_point = NULL,
-  optimum = NULL
+  optimum = NULL,
+  plot = FALSE
 )
 }
 \arguments{
@@ -31,16 +32,19 @@ ea_normalise(
 \item{break_point}{Numerical vector or single value indicating the value of the variable which should be scaled to 0.6 in the indicator.}
 
 \item{optimum}{Numerical vector or single value indicating the upper reference value for a two-sided indicator.}
+
+\item{plot}{Logical. Wheter to return a plot comparing normalised and raw values, or to return the normalised values (default).}
 }
 \value{
-numerical vector, a normalised version of \code{x}
+If plot = TRUE return a ggplot comparing normalised and raw values. If plot = False return the numerical vector, a normalised version of \code{vetcor}
 }
 \description{
 A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value between 0 and 1, bound by an upper reference level.
 }
 \examples{
 data("ex_polygons")
-hist(ea_normalise(data = ex_polygons,
+ea_normalise(data = ex_polygons,
             vector = "condition_variable_2",
-            upper_reference_level = 8))
+            upper_reference_level = 8,
+            plot=TRUE)
 }
