@@ -9,13 +9,28 @@ ea_normalise(
   vector = NULL,
   upper_reference_level = NULL,
   lower_reference_level = 0,
-  scaling_function = "linear"
+  scaling_function = "linear",
+  reverse = FALSE,
+  break_point = NULL,
+  optimum = NULL
 )
 }
 \arguments{
-\item{scaling_function}{one of c("linear", "exponential)}
+\item{data}{Data set of class sf}
 
-\item{x}{numerical vector to be normalised}
+\item{vector}{Numerical vector inside \code{data} which should be normalised}
+
+\item{upper_reference_level}{The upper reference level against which to normalise the \code{vector}. Can be a single number or a vector of length equal to \code{vector}.}
+
+\item{lower_reference_level}{The lower reference level against which to normalise the \code{vector}. Defaults to 0. Can be a single number or a vector of length equal to \code{vector}.}
+
+\item{scaling_function}{one of c("linear", "sigmoid", "exponential convex", "exponential concave")}
+
+\item{reverse}{Logical. Should the indicator values be reversed (i.e. giving a high variable value a low indicator value)}
+
+\item{break_point}{Numerical vector or single value indicating the value of the variable which should be scaled to 0.6 in the indicator.}
+
+\item{optimum}{Numerical vector or single value indicating the upper reference value for a two-sided indicator.}
 }
 \value{
 numerical vector, a normalised version of \code{x}
@@ -24,14 +39,8 @@ numerical vector, a normalised version of \code{x}
 A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value between 0 and 1, bound by an upper reference level.
 }
 \examples{
-#get example data (an sf object)
 data("ex_polygons")
-hist(ex_polygons$condition_variable_1,
-     main="", xlab="Condition variable 1")
-
-# Normalise using static upper reference value
 hist(ea_normalise(data = ex_polygons,
-                  vector = "condition_variable_1",
-                  upper_reference_level = 10),
-     main="", xlab="Indicator value")
+            vector = "condition_variable_2",
+            upper_reference_level = 8))
 }
