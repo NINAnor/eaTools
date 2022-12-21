@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   normalise-condition-variable: normalise-condition-variable.html
-last_built: 2022-12-21T10:02Z
+last_built: 2022-12-21T13:43Z
 urls:
   reference: https://ninanor.github.io/eaTools/reference
   article: https://ninanor.github.io/eaTools/articles
