@@ -40,32 +40,100 @@ regions <- ex_raster
 tm_shape(ex_raster)+
   tm_raster(alpha = .3,
             style = "cat")+
-  tm_shape(regions)+
+  tm_shape(accounting_area)+
   tm_polygons(alpha = .3)+
   tm_shape(indicator)+
   tm_polygons()+
   tm_layout(legend.outside = T)
 ```
 
-Case 1: Aggregate the indicator values from the small polygons for each of the three classes in the raster layer.
+Case 1: Aggregate the indicator values from the small polygons for each of the three classes in the raster layer, and spread them to the raster layer.
 
-We can vectorize the raster
+Let's create some example data by zooming in on the above maps.
+
 ```{r}
-p = st_as_sf(regions, as_points = FALSE, merge = TRUE)
+ex_raster_zoom <- ex_raster[,9:10, 4:5]
+ex_polygons_zoom <- sf::st_crop(ex_polygons, ex_raster_zoom)
 ```
 
 ```{r}
-tm_shape(p)+
-  tm_polygons(col = "values")+
-  tm_shape(indicator)+
+tm_shape(ex_raster_zoom)+
+  tm_raster(style="cat")+
+  tm_shape(ex_polygons_zoom)+
+  tm_polygons(col = "condition_variable_2")+
+  tm_layout(legend.outside = T)
+```
+
+
+
+Let's rasterize the vector data. To do this we need the terra package, as stars dont allow us to rasterize using the mean function. 
+```{r}
+ex_polygons_zoom_terra <- terra::vect(ex_polygons_zoom)
+ex_raster_zoom_terra <- terra::rast(ex_raster_zoom)
+```
+
+
+Rasterize
+```{r}
+temp <- rast(ex_polygons_zoom_terra, res = 100)
+temp2 <- rast(ex_polygons_zoom_terra, res = 1)
+
+ex_polygons_zoom_terra_rast <- terra::rasterize(ex_polygons_zoom_terra,
+                                         temp,
+                                         touches = T,
+                                         field = "condition_variable_2"
+                                        )
+ex_polygons_zoom_terra_rast2 <- terra::rasterize(ex_polygons_zoom_terra,
+                                         temp2,
+                                         touches = T,
+                                         field = "condition_variable_2"
+                                        )
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(ex_polygons_zoom_terra_rast)
+plot(ex_polygons_zoom_terra_rast2)
+
+```
+
+```{r}
+temp <- terra::resample(ex_polygons_zoom_terra_rast2,
+                        ex_raster_zoom_terra,
+                        method = "average")
+plot(temp)
+```
+
+
+Let's check wht these values are. They should be the means.
+
+We must first vectorize the raster
+```{r}
+ex_raster_zoom_vect <- st_as_sf(ex_raster_zoom, as_points = FALSE, merge = TRUE)
+```
+
+
+```{r}
+tm_shape(ex_raster_zoom_vect)+
+  tm_polygons(col = "values",
+              style="cat")+
+  tm_shape(ex_polygons_zoom)+
   tm_polygons()+
   tm_layout(legend.outside = T)
 ```
 
-Pull values (categorical class 1 -3) from the vectorized raster over to to the small polygons 
+Pull values from the vectorized raster  (categorical class 1 -3) over to to the small polygons 
 ```{r}
-p2 <- st_intersection(indicator, p)
+ex_polygons_raster_zoom <- st_intersection(ex_polygons_zoom, ex_raster_zoom_vect)
 ```
+
+```{r}
+tapply(ex_polygons_raster_zoom$condition_variable_2,
+       ex_polygons_raster_zoom$values,
+       mean)
+```
+
+They are not the means.
 
 ```{r}
 tm_shape(p2)+
@@ -75,7 +143,7 @@ tm_shape(p2)+
   tm_layout(legend.outside = T)
 ```
  
-summarise the indicator per category
+Summarise the indicator per category
 ```{r}
 p3 <- p2 %>%
   group_by(values) %>%
@@ -95,23 +163,83 @@ tm_shape(p)+
   tm_layout(legend.outside = T)
 ```
 
-We can rasterize the polygons
+We can then rasterice this back again
 ```{r}
-indicator_raster <- stars::st_rasterize(indicator,
-                              template = regions,
-                              #align = T,
-                              options = c("ALL_TOUCHED=TRUE"))
+rasterized <- stars::st_rasterize(p, regions)
 ```
 
 ```{r}
-tm_shape(indicator_raster[3,,])+
+tm_shape(rasterized)+
   tm_raster()+
-  tm_shape(indicator)+
-  tm_polygons()
+  tm_layout(legend.outside = T)
 ```
+
+Test with bigger raster
+```{r}
+infra <- stars::read_stars("P:/41201785_okologisk_tilstand_2022_2023/data/infrastrukturindeks/NY_INFRA_IND.tif", proxy = T)
+```
+
+Here I define a simplified categorical typology for the infrastructure index using four classes. 
+```{r}
+names(infra) <- "infrastructureIndex"
+infra_reclassed <-  infra %>%
+  mutate(infrastructureIndex = case_when(
+    infrastructureIndex < 1 ~ 0,
+    infrastructureIndex < 6 ~ 1,
+    infrastructureIndex < 9 ~ 2,
+    infrastructureIndex >= 9 ~ 3
+  ))
+```
+
 
 
 ```{r}
-summary(indicator$condition_variable_2)
+myBB <- st_bbox(c(xmin=260520.12, xmax = 278587.56,
+                ymin = 7032142.5, ymax = 7045245.27),
+                crs = st_crs(infra))
 ```
 
+
+Cropping the raster to speed up processing.
+```{r}
+infra_trd <- sf::st_crop(infra_reclassed, myBB)
+```
+
+```{r}
+tm_shape(infra_trd)+
+  tm_raster(style="cat")+
+  tm_layout(legend.outside = T)
+  
+```
+
+Perhaps I can aggregate some
+
+```{r}
+infra_agg <- st_warp(infra,
+                         cellsize = c(1000, 1000),
+                         use_gdal = TRUE,
+                         method = "average",
+                         no_data_value = 99)
+```
+
+
+
+```{r}
+names(infra_agg) <- "infrastructureIndex"
+
+infra_agg_refactor <-  infra_agg %>%
+  mutate(infrastructureIndex = case_when(
+    infrastructureIndex < 1 ~ 0,
+    infrastructureIndex < 6 ~ 1,
+    infrastructureIndex < 9 ~ 2,
+    infrastructureIndex >= 9 ~ 3
+  ))
+
+infra_trd_agg <- sf::st_crop(infra_agg_refactor, myBB)
+
+tm_shape(infra_trd_agg)+
+  tm_raster()+
+  tm_layout(legend.outside = T)
+```
+
+How long does it take to vactorize this raster?
