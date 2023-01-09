@@ -21,59 +21,120 @@ library(eaTools)
 library(tmap)
 library(stars)
 library(dplyr)
-
 ```
 
 # Introduction
-We are often in a position where we need to aggregate indicators to certain regions within a larger accounting area. This process is a little different depending on the spatial coverage of the indicator and whether the regions are defined in a raster or with polygons. 
+
+We are often in a position where we need to aggregate indicators to certain regions within a larger accounting area. This process is a little different depending on the spatial coverage of the indicator and whether the regions are defined in a raster or with polygons.
+
+We will use some example data sets included in the package.
 
 ```{r}
 data("ex_polygons")
 data("accounting_area")
 data("ex_raster")
-indicator <- ex_polygons
-#regions <- accounting_area
-regions <- ex_raster
+```
+
+```{r example-data, fig.cap="Showing the three example datasets on top of eachother. The raster layer (ex_raster) have cell values 1, 2 or 3, as shown in the legend. The five large polygons is the accounting_area layer, and the smaller polygins, visible as specks, is teh ex_polygons layer."}
+tm_shape(ex_raster)+
+  tm_raster(alpha = 1,
+            style = "cat")+
+  tm_shape(accounting_area)+
+  tm_polygons(alpha = .6)+
+  tm_shape(ex_polygons)+
+  tm_polygons(border.col = "black")+
+  tm_layout(legend.outside = T)+
+  tm_scale_bar(position = c("right", "bottom"), width = 0.3)
+
+```
+
+## Case 1: Aggregate indicator values from small polygons for each of the three classes in the raster layer, and *spread them* to cover the entire raster layer.
+
+In this example we are imagining that `ex_polygons`, and the column `condition_variable_2`, contains a condition variable, and that `ex_raster` denotes homogeneous areas. We aknowledge a spatial bias in the sampling of the dummy condition variable. However, in this hypothetical example, we think that the variable/indicator can be said to be representative of the homogeneous area class that it belongs to. We therefore allow ourselves to extrapolate, or *spread*, the mean indicator values within a given homogeneous area class to the other grid cells of the same class.
+
+To be able to see what we are doing, we will zoom in on the data above.
+
+```{r}
+ex_raster_zoom <- ex_raster[,5:6, 28:29]
+ex_polygons_zoom <- sf::st_crop(ex_polygons, ex_raster_zoom)
+```
+
+First we would scale the variable, and make it into an indicator using `ea_normalise()` (See `vignette("Normalise condition variable")`).
+```{r}
+ex_polygons_zoom$indicator <- ea_normalise(ex_polygons_zoom,
+                                           "condition_variable_2",
+                                           upper_reference_level = 7)
+```
+
+```{r exampla-data-zoom, fig.cap="Example data produced by zoomin in on four grid cells in the above figure."}
+tm_shape(ex_raster_zoom)+
+  tm_raster(style="cat")+
+  tm_shape(ex_polygons_zoom)+
+  tm_polygons(col = "indicator",
+              palette = "RdYlGn",
+              border.col = "black")+
+  tm_layout(legend.outside = T)+
+  tm_scale_bar(position = c("right", "bottom"), width = 0.3)
+```
+
+Although it is a rather heavy operation, we will now vectorize the raster. The number of grid cells should not be excessive, or this will be too slow.
+
+```{r}
+ex_raster_zoom_vect <- st_as_sf(ex_raster_zoom, as_points = FALSE, merge = TRUE)
+```
+
+Now well get the intersections. Thik of this as pulling values from the vectorized raster (categorical class 1 -3) over to to the small polygons.
+```{r}
+ex_polygons_raster_zoom <- st_intersection(ex_polygons_zoom, ex_raster_zoom_vect)
+```
+This operation splits the small polygons in `ex_polygons_zoom` when they span two or more raster grid cells. We can now calculate the mean for each homogeneous area class.
+```{r}
+tapply(ex_polygons_raster_zoom$indicator,
+       ex_polygons_raster_zoom$values,
+       mean)
+```
+
+Homogeneous area class 3 is in better condition, apparently.
+Let's now pull these averages back to the vectorized grid.
+
+
+#### STOP HERE
+```{r}
+ex_raster_zoom_vect$meanIndicator <- ex_polygons_raster_zoom$[
+  match(ex_raster_zoom_vect$values, ex_$values)]
 ```
 
 ```{r}
-tm_shape(ex_raster)+
-  tm_raster(alpha = .3,
-            style = "cat")+
-  tm_shape(accounting_area)+
-  tm_polygons(alpha = .3)+
+tm_shape(p)+
+  tm_polygons(col = "meanIndicator")+
   tm_shape(indicator)+
   tm_polygons()+
   tm_layout(legend.outside = T)
 ```
 
-Case 1: Aggregate the indicator values from the small polygons for each of the three classes in the raster layer, and spread them to the raster layer.
-
-Let's create some example data by zooming in on the above maps.
+We can then rasterice this back again
 
 ```{r}
-ex_raster_zoom <- ex_raster[,9:10, 4:5]
-ex_polygons_zoom <- sf::st_crop(ex_polygons, ex_raster_zoom)
+rasterized <- stars::st_rasterize(p, regions)
 ```
 
 ```{r}
-tm_shape(ex_raster_zoom)+
-  tm_raster(style="cat")+
-  tm_shape(ex_polygons_zoom)+
-  tm_polygons(col = "condition_variable_2")+
+tm_shape(rasterized)+
+  tm_raster()+
   tm_layout(legend.outside = T)
 ```
+-------------------
 
 
+To do this we need the terra package, as stars dont allow us to rasterize using the mean function.
 
-Let's rasterize the vector data. To do this we need the terra package, as stars dont allow us to rasterize using the mean function. 
 ```{r}
 ex_polygons_zoom_terra <- terra::vect(ex_polygons_zoom)
 ex_raster_zoom_terra <- terra::rast(ex_raster_zoom)
 ```
 
-
 Rasterize
+
 ```{r}
 temp <- rast(ex_polygons_zoom_terra, res = 100)
 temp2 <- rast(ex_polygons_zoom_terra, res = 1)
@@ -104,34 +165,10 @@ temp <- terra::resample(ex_polygons_zoom_terra_rast2,
 plot(temp)
 ```
 
-
 Let's check wht these values are. They should be the means.
 
-We must first vectorize the raster
-```{r}
-ex_raster_zoom_vect <- st_as_sf(ex_raster_zoom, as_points = FALSE, merge = TRUE)
-```
+------------
 
-
-```{r}
-tm_shape(ex_raster_zoom_vect)+
-  tm_polygons(col = "values",
-              style="cat")+
-  tm_shape(ex_polygons_zoom)+
-  tm_polygons()+
-  tm_layout(legend.outside = T)
-```
-
-Pull values from the vectorized raster  (categorical class 1 -3) over to to the small polygons 
-```{r}
-ex_polygons_raster_zoom <- st_intersection(ex_polygons_zoom, ex_raster_zoom_vect)
-```
-
-```{r}
-tapply(ex_polygons_raster_zoom$condition_variable_2,
-       ex_polygons_raster_zoom$values,
-       mean)
-```
 
 They are not the means.
 
@@ -142,44 +179,25 @@ tm_shape(p2)+
   tm_polygons()+
   tm_layout(legend.outside = T)
 ```
- 
+
 Summarise the indicator per category
+
 ```{r}
 p3 <- p2 %>%
   group_by(values) %>%
   dplyr::summarise(meanIndicator = mean(condition_variable_2))
 ```
 
-and pull these values back to the vectorized grid
-```{r}
-p$meanIndicator <- p3$meanIndicator[match(p$values, p3$values)]
-```
 
-```{r}
-tm_shape(p)+
-  tm_polygons(col = "meanIndicator")+
-  tm_shape(indicator)+
-  tm_polygons()+
-  tm_layout(legend.outside = T)
-```
-
-We can then rasterice this back again
-```{r}
-rasterized <- stars::st_rasterize(p, regions)
-```
-
-```{r}
-tm_shape(rasterized)+
-  tm_raster()+
-  tm_layout(legend.outside = T)
-```
 
 Test with bigger raster
+
 ```{r}
 infra <- stars::read_stars("P:/41201785_okologisk_tilstand_2022_2023/data/infrastrukturindeks/NY_INFRA_IND.tif", proxy = T)
 ```
 
-Here I define a simplified categorical typology for the infrastructure index using four classes. 
+Here I define a simplified categorical typology for the infrastructure index using four classes.
+
 ```{r}
 names(infra) <- "infrastructureIndex"
 infra_reclassed <-  infra %>%
@@ -191,16 +209,14 @@ infra_reclassed <-  infra %>%
   ))
 ```
 
-
-
 ```{r}
 myBB <- st_bbox(c(xmin=260520.12, xmax = 278587.56,
                 ymin = 7032142.5, ymax = 7045245.27),
                 crs = st_crs(infra))
 ```
 
-
 Cropping the raster to speed up processing.
+
 ```{r}
 infra_trd <- sf::st_crop(infra_reclassed, myBB)
 ```
@@ -222,8 +238,6 @@ infra_agg <- st_warp(infra,
                          no_data_value = 99)
 ```
 
-
-
 ```{r}
 names(infra_agg) <- "infrastructureIndex"
 
@@ -242,4 +256,24 @@ tm_shape(infra_trd_agg)+
   tm_layout(legend.outside = T)
 ```
 
-How long does it take to vactorize this raster?
+How long does it take to vectorize this raster?
+
+```{r}
+infra_agg_refactor_vect <-  st_as_sf(infra_agg_refactor, as_points = FALSE, merge = TRUE)
+```
+
+```{r}
+infra_agg_refactor_vect_trd <- st_crop(infra_agg_refactor_vect, myBB)
+```
+
+```{r}
+tm_shape(infra_agg_refactor_vect_trd)+
+  tm_polygons(col = "infrastructureIndex",
+              style="cat")+
+  tm_layout(legend.outside = T)
+  
+```
+
+This might be sufficient.
+
+Ten I need to get the intersections, and summary each class, and paste thos value back into this vectorized raster.
