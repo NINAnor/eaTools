@@ -88,10 +88,7 @@ tm_shape(ex_raster_zoom)+
   tm_scale_bar(position = c("left", "bottom"), width = 0.3)
 ```
 
-
-
 Although it is a rather heavy operation, we will now vectorize the raster. The number of grid cells should not be excessive, or this will be too slow.
-
 ```{r}
 ex_raster_zoom_vect <- st_as_sf(ex_raster_zoom, as_points = FALSE, merge = TRUE)
 ```
@@ -111,9 +108,6 @@ We can now calculate the area weighted mean for each homogeneous area class. Fir
 ```{r}
 ex_polygons_raster_zoom$area <- units::drop_units(st_area(ex_polygons_raster_zoom))
 ```
-
-
-
 
 ```{r}
 (myWeightedMeans <- ex_polygons_raster_zoom %>%
@@ -147,7 +141,7 @@ In the map above, the colour of the cells are in a way the average colour of the
 
 The next thing we should consider is this: do we have enough data to actually estimate an indicator value for a given region. Take the top left grid cell for example. The condition is apparently quite good, but this value is based on a variable recorded in only about two smaller polygons, and we have extrapolated these data to the entire grid cell. We could impose a rule that we need _x_ number of data points (or x% areal coverage) before we allow a mean indicator value to represent an entire homogeneous area class.
 
-I'm going to assume for this example that we use expoert judgement to say that we need 5 data points to base an average on. If we have less than that we will not attempt to estimate an average.
+I'm going to assume for this example that we use expert judgement to say that we need 5 data points to base an average on. If we have less than that we will not attempt to estimate an average.
 
 ```{r}
 (myConditionalWeightedMeans <- 
@@ -192,3 +186,21 @@ tm_shape(newIndicator[3,,])+
 ```
 
 And there we have it.
+
+We can do all this with eaTools functions
+```{r}
+myRegions <- ea_homogeneous_area(ex_raster_zoom)
+```
+```{r}
+temp <- sf::st_intersection(ex_polygons_zoom, myRegions)
+```
+
+<!-- Cant find the arg group -->
+```{r}
+myIndicator <- ea_spread(indicator_data = ex_polygons_zoom,
+                         indicator = "indicator",
+                         regions = myRegions,
+                         group = "values",
+                         threshold = 5)
+```
+
