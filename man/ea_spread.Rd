@@ -37,18 +37,13 @@ ex_polygons_zoom$indicator <- ea_normalise(ex_polygons_zoom,
 upper_reference_level = 7)
 # Tweak the data slightly for exagerated effect
 ex_polygons_zoom$indicator[2:6] <- 1
-Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.
+# Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.
 myRegions <- ea_homogeneous_area(ex_raster_zoom)
-Now use the function
+# Now use the function
 out <- ea_spread(indicator_data = ex_polygons_zoom,
 indicator = indicator,
 regions = myRegions,
 groups = values)
 # And plot the results
-tm_shape(out)+
-tm_polygons(col = "meanIndicatorValue",
-           title="Indicator value",
-           palette = "RdYlGn",
-           breaks = seq(0,1,0.2))+
-tm_layout(legend.position = c('left', 'top'))
+plot(out[,2])
 }

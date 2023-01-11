@@ -6,6 +6,8 @@
 #' @param delineation2 A second, optional, geometry (sf or stars object)
 #'
 #' @return The function returns an sf object with polygons defined by the intersection of `delineation1` and `delineation2`. If either of the inputs are rasters, they will be vectorised, and neighboring cells with identical values will be merged.
+#' @import stars
+#' @import sf
 #' @export
 #'
 #' @examples

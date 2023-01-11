@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, warning=F, message=F}
 library(eaTools)
 library(tmap)
 library(stars)
@@ -50,13 +50,13 @@ tm_shape(ex_raster)+
 
 ```
 
-## Case 1: Aggregate indicator values from small polygons for each of the three classes in the raster layer, and *spread them* to cover the entire raster layer.
+# Case 1: Aggregate indicator values from small polygons for each of the three classes in the raster layer, and *spread them* to cover the entire raster layer.
 
 In this example we are imagining that `ex_polygons`, and the column `condition_variable_2`, contains a condition variable, and that `ex_raster` denotes homogeneous areas. We aknowledge a spatial bias in the sampling of the dummy condition variable. However, in this hypothetical example, we think that the variable/indicator can be said to be representative of the homogeneous area class that it belongs to. We therefore allow ourselves to extrapolate, or *spread*, the mean indicator values within a given homogeneous area class to the other grid cells of the same class.
 
 To be able to see what we are doing, we will zoom in on the data above.
 
-```{r}
+```{r, warning=F}
 ex_raster_zoom <- ex_raster[,5:6, 28:29]
 ex_polygons_zoom <- sf::st_crop(ex_polygons, ex_raster_zoom)
 ```
@@ -69,7 +69,7 @@ ex_polygons_zoom$indicator <- ea_normalise(ex_polygons_zoom,
                                            upper_reference_level = 7)
 ```
 
-```{r example-indicator-hist, fig.cap="Histogram of the example indicator values."}
+```{r example-indicator-hist, fig.cap="Histogram of the example indicator values.", warning=F, message=F}
 ggplot(ex_polygons_zoom, aes(x = indicator))+
   geom_histogram(fill = "grey",
                  colour = "black",
@@ -96,7 +96,7 @@ ex_polygons_zoom$indicator[2:6] <- 1
 
 We now want to calculate the area weighted mean for each homogeneous area class, i.e. the three different coloured grid cells in Fig. \@ref(fig:exampla-data-zoom).
 
-First we process the \`ex_raster_zoom\` and define *homogeneous areas* based on the cell values.
+First we process the `ex_raster_zoom` and define *homogeneous areas* based on the cell values.
 
 ```{r}
 myRegions <- ea_homogeneous_area(ex_raster_zoom)
@@ -119,7 +119,7 @@ myIndicator_noThreshold <- ea_spread(indicator_data = ex_polygons_zoom,
                          groups = values)
 ```
 
-```{r easpread-out, fig.cap="Example where the area weighted averages of the indicator values in the small polygons are spread over the raster cells with each homogeneous area class. Only homogeneous area class with more than 5 data points get indicator values."}
+```{r easpread-out, fig.cap="Example where the area weighted averages of the indicator values in the small polygons are spread over the raster cells with each homogeneous area class. In the left example, only homogeneous area class with more than 5 data points get indicator values."}
 tmap_arrange(
   tm_shape(myIndicator)+
     tm_polygons(col = "meanIndicatorValue",
@@ -158,5 +158,5 @@ If we look at the right hand figure, homogeneous area class 3 is in better condi
 We can then rasterise this back again, because a raster format is more useful for subsequent analyses, such as aggregating indicators. Here we can use an existing function from the `sf` package.
 
 ```{r}
-newIndicator_raster <- stars::st_rasterize(newIndicator, ex_raster_zoom)
+newIndicator_raster <- stars::st_rasterize(myIndicator, ex_raster_zoom)
 ```

@@ -9,11 +9,12 @@
 #' @param threshold Number of data points (i.e. unique indicator values) needed to calculate an average indicator value. Defaults to 1 (i.e. no threshold).
 #'
 #' @return The returned object is an `sf` object containing homogeneous area classes and mean indicator values.
-#' @import units
+#' @importFrom  units drop_units
 #' @import dplyr
 #' @import sf
 #' @import stars
-#' @import stats
+#' @importFrom stats weighted.mean
+#' @import rlang
 #' @export
 #'
 #' @examples
@@ -38,25 +39,20 @@
 #' regions = myRegions,
 #' groups = values)
 #' # And plot the results
-#' tm_shape(out)+
-#' tm_polygons(col = "meanIndicatorValue",
-#'            title="Indicator value",
-#'            palette = "RdYlGn",
-#'            breaks = seq(0,1,0.2))+
-#' tm_layout(legend.position = c('left', 'top'))
-
+#' plot(out[,2])
 ea_spread <- function(indicator_data,
                       indicator,
                       regions,
                       groups,
                       threshold = 1){
+  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
       # get the intersections
     st_agr(indicator_data) <- "constant"
     st_agr(regions) <- "constant"
     indicator_split <- sf::st_intersection(indicator_data, regions)
       # calculate area of the intersections
-    indicator_split$area <- units::drop_units(sf::st_area(indicator_split))
+    indicator_split$area <- drop_units(sf::st_area(indicator_split))
   } else stop("The input data is not in a supported format. Both indicators and regions need to be sf objects.")
       # Calculate the area weighted mean indicator values for each region
   if(missing(indicator)) stop("Indicator column is not defined")
@@ -66,7 +62,7 @@ ea_spread <- function(indicator_data,
   indicator_int <- enquo(indicator)
 
 
-  myWeightedMeans <<- indicator_split %>%
+  myWeightedMeans <- indicator_split %>%
       group_by(!!groups_int) %>%
       mutate(n = n(),
              indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
