@@ -191,16 +191,51 @@ We can do all this with eaTools functions
 ```{r}
 myRegions <- ea_homogeneous_area(ex_raster_zoom)
 ```
-```{r}
-temp <- sf::st_intersection(ex_polygons_zoom, myRegions)
-```
 
-<!-- Cant find the arg group -->
 ```{r}
 myIndicator <- ea_spread(indicator_data = ex_polygons_zoom,
-                         indicator = "indicator",
+                         indicator = indicator,
                          regions = myRegions,
-                         group = "values",
+                         groups = values,
                          threshold = 5)
+```
+
+```{r}
+myIndicator_noThreshold <- ea_spread(indicator_data = ex_polygons_zoom,
+                         indicator = indicator,
+                         regions = myRegions,
+                         groups = values)
+```
+
+```{r easpread-out, fig.cap="Example where the area weighted averages of the indicator values in the small polygons are spread over the raster cells with each homogeneous area class. Only homogeneous area class with more than 5 data points get indicator values."}
+tmap_arrange(
+  tm_shape(myIndicator)+
+    tm_polygons(col = "meanIndicatorValue",
+                title="Indicator value",
+                palette = "RdYlGn",
+                breaks = seq(0,1,0.2))+
+    tm_shape(ex_polygons_zoom)+
+    tm_polygons(col = "indicator",
+                legend.show = F,
+                palette = "RdYlGn",
+                breaks = seq(0,1,0.2),
+                border.col = "black")+
+    tm_layout(legend.position = c('left', 'top'),
+              title = "Threshold = 5 data points")
+  ,
+  tm_shape(myIndicator_noThreshold)+
+    tm_polygons(col = "meanIndicatorValue",
+                title="Indicator value",
+                palette = "RdYlGn",
+                breaks = seq(0,1,0.2))+
+    tm_shape(ex_polygons_zoom)+
+    tm_polygons(col = "indicator",
+                legend.show = F,
+                palette = "RdYlGn",
+                breaks = seq(0,1,0.2),
+                border.col = "black")+
+    tm_layout(legend.position = c('left', 'top'),
+              title = "No threshold")
+)
 ```
 
