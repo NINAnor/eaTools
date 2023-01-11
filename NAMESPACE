@@ -2,6 +2,7 @@
 
 export(ea_homogeneous_area)
 export(ea_normalise)
+export(ea_spread)
 import(ggplot2)
 importFrom(ggridges,geom_density_ridges_gradient)
 importFrom(rlang,is_empty)
