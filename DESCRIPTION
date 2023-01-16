@@ -26,5 +26,6 @@ LazyData: true
 Suggests: 
     knitr,
     rmarkdown,
-    tmap
+    tmap,
+    textclean
 VignetteBuilder: knitr
