@@ -14,7 +14,7 @@
 #'
 #' @return If plot = TRUE return a ggplot comparing normalised and raw values. If plot = False return the numerical vector, a normalised version of `vetcor`
 #'
-#' @importFrom rlang is_empty
+#' @import rlang
 #' @importFrom ggridges geom_density_ridges_gradient
 #' @import ggplot2
 #' @export
@@ -116,8 +116,8 @@
       ylab("Indicator values")+
       xlab("Variable values")+
       scale_fill_gradient("Indicator values", low = low, high = high)+
-      scale_x_continuous(expand = expansion(mult = c(.2)))+
-      scale_y_continuous(expand = expansion(mult = c(.2)))+
+      scale_x_continuous(expand = expansion(mult = .2))+
+      scale_y_continuous(expand = expansion(mult = .2))+
       guides(fill="none")
     ggOut
   }
