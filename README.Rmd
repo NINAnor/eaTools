@@ -13,19 +13,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# eaTools <img src='man/figures/logo.png' align="right" height="139" />
+# eaTools <img src="man/figures/logo.png" align="right" height="139"/>
 
 <!-- badges: start -->
-```{r, echo = FALSE, results='asis'}
-cat(
-	badger::badge_codefactor("https://github.com/NINAnor/eaTools")
-)
-```
-[![R-CMD-check](https://github.com/NINAnor/eaTools/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NINAnor/eaTools/actions/workflows/R-CMD-check.yaml)
+[![CodeFactor](https://www.codefactor.io/repository/github/ninanor/eatools/badge)](https://www.codefactor.io/repository/github/ninanor/eatools) [![R-CMD-check](https://github.com/NINAnor/eaTools/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NINAnor/eaTools/actions/workflows/R-CMD-check.yaml)
+
 <!-- badges: end -->
 
 The goal of eaTools is to provide tools for creating ecosystem accounts.
-
 
 ## Installation
 
@@ -35,5 +30,3 @@ You can install the development version of eaTools from [GitHub](https://github.
 # install.packages("devtools")
 devtools::install_github("NINAnor/eaTools")
 ```
-
-
