@@ -10,6 +10,9 @@
     <loc>https://ninanor.github.io/eaTools/LICENSE.html</loc>
   </url>
   <url>
+    <loc>https://ninanor.github.io/eaTools/articles/aggregate-indicators-to-regions.html</loc>
+  </url>
+  <url>
     <loc>https://ninanor.github.io/eaTools/articles/index.html</loc>
   </url>
   <url>
@@ -25,7 +28,13 @@
     <loc>https://ninanor.github.io/eaTools/reference/accounting_area.html</loc>
   </url>
   <url>
+    <loc>https://ninanor.github.io/eaTools/reference/ea_homogeneous_area.html</loc>
+  </url>
+  <url>
     <loc>https://ninanor.github.io/eaTools/reference/ea_normalise.html</loc>
+  </url>
+  <url>
+    <loc>https://ninanor.github.io/eaTools/reference/ea_spread.html</loc>
   </url>
   <url>
     <loc>https://ninanor.github.io/eaTools/reference/ex_polygons.html</loc>
