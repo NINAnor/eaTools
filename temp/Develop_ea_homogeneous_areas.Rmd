@@ -1,0 +1,150 @@
+---
+title: "Develop ea_homogeneous_areas"
+author: "Anders Kolstad"
+date: "2023-01-17"
+output: html_document
+---
+
+Develop ea_homogeneous_areas to include delim2
+
+```{r}
+library(devtools)
+load_all()
+library(tmap)
+library(stars)
+library(dplyr)
+library(stats)
+library(ggplot2)
+```
+
+Get test data
+
+```{r}
+data("ex_polygons")
+data("accounting_area")
+data("ex_raster")
+```
+
+```{r}
+ea_homogeneous_area_dev <- function(delineation1,
+                                delineation2,
+                                keep1 = NULL,
+                                keep2 = NULL){
+  if("stars" %in% class(delineation1)){
+    if(max(dim(delineation1)) > 10000) warning("You have inputted a large raster file. Vectorisation might take a long time.")
+    HIA <- sf::st_as_sf(delineation1, as_points = FALSE, merge = TRUE)
+  }
+  if("sf" %in% class(delineation1)){
+    HIA <- delineation1 %>%
+      select(all_of(keep1))
+  }
+  if(missing(delineation2)) {
+    return(HIA) 
+  } else{
+    if("sf" %in% class(delineation2)){
+    HIA <- delineation2 %>%
+      select(all_of(keep2)) %>%
+      st_intersection(HIA) %>%
+      st_collection_extract() %>%
+      st_cast(to = "POLYGON")
+    return(HIA)
+  } else stop("Delinetaion1 is in a format which is not supported.")
+    }
+}
+```
+
+Example 1: two sf objects
+
+```{r}
+ex1 <- ea_homogeneous_area_dev(ex_polygons,
+                                accounting_area,
+                                keep1 = "condition_variable_2",
+                                keep2 = "name")
+```
+
+All geometries are valiued (closed)
+
+```{r}
+table(st_is_valid(test))
+```
+
+All geometries are converted to polygons, including points and lines that might be produced as part of the intersection of overlapping geometries. See [here](https://github.com/r-spatial/sf/issues/1484).
+
+```{r}
+unique(st_geometry_type(ex1))
+```
+
+Only the names given by `keep1` and `keep2` are retained:
+
+```{r}
+names(ex1)
+```
+
+Example 2: One raster and one sf object
+
+```{r}
+ex2 <- ea_homogeneous_area_dev(ex_raster,
+                                accounting_area,
+                                keep2 = "name")
+
+
+```
+
+Calculate the area of the new polygons
+
+```{r}
+test2$area <- units::drop_units(sf::st_area(test2))
+hist(test2$area)
+
+```
+
+Visualise where the small polygons are. They should be produced at the boarder between intersecting polygons
+
+```{r}
+plot(test2$geometry)
+plot(test2$geometry[test2$area<1000000],
+     col="black", add=T)
+
+```
+
+```{r}
+tm_shape(ex2)+
+  tm_polygons(col = "values")+
+  tm_shape(ex2[ex2$name == "Enebakk",])+
+  tm_polygons(col = "blue", border.col = "black")
+
+```
+
+## Example 3: Test on bigger data
+
+```{r}
+HIA <- readRDS("P:/41201785_okologisk_tilstand_2022_2023/data/infrastrukturindeks/homogeneous_impact_areas.rds")
+regions <- sf::read_sf("../../ecosystemCondition/data/regions.shp")
+```
+
+```{r}
+st_crs(HIA) == st_crs(regions)
+```
+
+```{r}
+regions <- sf::st_transform(regions, 32633) 
+```
+
+```{r, eval=F}
+ex3 <- ea_homogeneous_area(HIA,
+                           regions,
+                           keep1 = "infrastructureIndex",
+                           keep2 = "region")
+```
+
+Runtime was about 30 seconds.
+
+```{r, eval=F}
+dim(ex3); dim(HIA); dim(regions)
+```
+
+[1] 32402 3
+
+[1] 31869 2
+
+[1] 5 3

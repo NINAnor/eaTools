@@ -4,20 +4,44 @@
 \alias{ea_homogeneous_area}
 \title{ea_homogeneous_area}
 \usage{
-ea_homogeneous_area(delineation1 = NULL, delineation2 = NULL)
+ea_homogeneous_area(delineation1, delineation2, keep1 = NULL, keep2 = NULL)
 }
 \arguments{
 \item{delineation1}{A geometry (sf or stars object)}
 
-\item{delineation2}{A second, optional, geometry (sf or stars object)}
+\item{delineation2}{A second, optional, sf object}
+
+\item{keep1}{Column names in delineation1 to keep in the returned object. Only if delineation1 is an sf object.}
+
+\item{keep2}{Column names in delineation2 to keep in the returned object.}
 }
 \value{
-The function returns an sf object with polygons defined by the intersection of \code{delineation1} and \code{delineation2}. If either of the inputs are rasters, they will be vectorised, and neighboring cells with identical values will be merged.
+The function returns an sf object with polygons defined by the intersection of \code{delineation1} and \code{delineation2}.
+\code{Delineation1} can be a raster (stars object), and will then be vectorised, and neighboring cells with identical values
+will be merged. \code{Delineation1} and \code{delineation2} should normally be completely overlapping, since areas not covered by both
+layers will be dropped in the output.
 }
 \description{
-A function to create a new geometry based on two input geometries. The function is meant to precede \code{ea_spread} and to define homogeneous area over which we can spread (i.e. aggregate) indicator values.
+A function to create a new geometry based on two input geometries. The function is meant to precede \code{ea_spread}
+and to define homogeneous area over which we can spread (i.e. aggregate) indicator values.
 }
 \examples{
 data("ex_raster")
-ea_homogeneous_area(ex_raster)
+data("ex_polygons")
+data("accounting_area")
+# Example 1: two sf objects
+ex1 <- ea_homogeneous_area(ex_polygons,
+          accounting_area,
+          keep1 = "condition_variable_2",
+          keep2 = "name")
+# Only the names given by `keep1` and `keep2` are retained:
+names(ex1)
+# Example 2: One stars object and one sf object
+ex2 <- ea_homogeneous_area(ex_raster,
+          accounting_area,
+          keep2 = "name")
+tmap::tm_shape(ex2)+
+ tmap::tm_polygons(col = "values")+
+tmap::tm_shape(ex2[ex2$name == "Enebakk",])+
+   tmap::tm_polygons(col = "blue", border.col = "black")
 }
