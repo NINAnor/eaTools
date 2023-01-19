@@ -4,22 +4,33 @@
 \alias{ea_homogeneous_area}
 \title{ea_homogeneous_area}
 \usage{
-ea_homogeneous_area(delineation1, delineation2, keep1 = NULL, keep2 = NULL)
+ea_homogeneous_area(
+  delineation1,
+  delineation2,
+  outline,
+  keep1 = NULL,
+  keep2 = NULL
+)
 }
 \arguments{
 \item{delineation1}{A geometry (sf or stars object)}
 
-\item{delineation2}{A second, optional, sf object}
+\item{delineation2}{A second, optional, sf object, with the same crs as \code{delineation1}.}
+
+\item{outline}{An optional sf object to mask out areas outside it.}
 
 \item{keep1}{Column names in delineation1 to keep in the returned object. Only if delineation1 is an sf object.}
 
 \item{keep2}{Column names in delineation2 to keep in the returned object.}
 }
 \value{
-The function returns an sf object with polygons defined by the intersection of \code{delineation1} and \code{delineation2}.
+The function returns an sf object with polygons defined by the intersection of \code{delineation1}, \code{delineation2}
+and \code{outline}.
 \code{Delineation1} can be a raster (stars object), and will then be vectorised, and neighboring cells with identical values
-will be merged. \code{Delineation1} and \code{delineation2} should normally be completely overlapping, since areas not covered by both
+will be merged.
+\code{Delineation1} and \code{delineation2} should normally be completely overlapping, since areas not covered by both
 layers will be dropped in the output.
+An optional \code{outline} layer can be used to cut away areas, typically areas outside the accounting area.
 }
 \description{
 A function to create a new geometry based on two input geometries. The function is meant to precede \code{ea_spread}
@@ -44,4 +55,12 @@ tmap::tm_shape(ex2)+
  tmap::tm_polygons(col = "values")+
 tmap::tm_shape(ex2[ex2$name == "Enebakk",])+
    tmap::tm_polygons(col = "blue", border.col = "black")
+# Example 3: Example 2 + outline
+enebakk <- accounting_area[accounting_area$name == "Enebakk",]
+ex3 <- ea_homogeneous_area(ex_raster,
+          accounting_area,
+          enebakk,
+          keep2 = "name")
+tmap::tm_shape(ex3)+
+          tmap::tm_polygons(col = "values")
 }
