@@ -61,6 +61,6 @@ ex3 <- ea_homogeneous_area(ex_raster,
           accounting_area,
           enebakk,
           keep2 = "name")
-tm_shape(ex3)+
-          tm_polygons(col = "values")
+tmap::tm_shape(ex3)+
+          tmap::tm_polygons(col = "values")
 }
