@@ -28,6 +28,7 @@ data("ex_raster")
 ```{r}
 ea_homogeneous_area_dev <- function(delineation1,
                                 delineation2,
+                                outline,
                                 keep1 = NULL,
                                 keep2 = NULL){
   if("stars" %in% class(delineation1)){
@@ -47,13 +48,21 @@ ea_homogeneous_area_dev <- function(delineation1,
       st_intersection(HIA) %>%
       st_collection_extract() %>%
       st_cast(to = "POLYGON")
-    return(HIA)
-  } else stop("Delinetaion1 is in a format which is not supported.")
+    if(missing(outline)){
+      return(HIA)
+    } else {
+      if("sf" %in% class(outline)){
+        HIA_outline <- HIA %>%
+          st_intersection(outline)
+        return(HIA_outline)
+      } else stop("Outline is not an sf object")
+    }
+  } else stop("Delineation2 is not an sf object")
     }
 }
 ```
 
-Example 1: two sf objects
+# Example 1: two sf objects
 
 ```{r}
 ex1 <- ea_homogeneous_area_dev(ex_polygons,
@@ -62,10 +71,10 @@ ex1 <- ea_homogeneous_area_dev(ex_polygons,
                                 keep2 = "name")
 ```
 
-All geometries are valiued (closed)
+All geometries are valid (closed)
 
 ```{r}
-table(st_is_valid(test))
+table(st_is_valid(ex1))
 ```
 
 All geometries are converted to polygons, including points and lines that might be produced as part of the intersection of overlapping geometries. See [here](https://github.com/r-spatial/sf/issues/1484).
@@ -80,7 +89,7 @@ Only the names given by `keep1` and `keep2` are retained:
 names(ex1)
 ```
 
-Example 2: One raster and one sf object
+# Example 2: One raster and one sf object
 
 ```{r}
 ex2 <- ea_homogeneous_area_dev(ex_raster,
@@ -93,16 +102,16 @@ ex2 <- ea_homogeneous_area_dev(ex_raster,
 Calculate the area of the new polygons
 
 ```{r}
-test2$area <- units::drop_units(sf::st_area(test2))
-hist(test2$area)
+ex2$area <- units::drop_units(sf::st_area(ex2))
+hist(ex2$area)
 
 ```
 
 Visualise where the small polygons are. They should be produced at the boarder between intersecting polygons
 
 ```{r}
-plot(test2$geometry)
-plot(test2$geometry[test2$area<1000000],
+plot(ex2$geometry)
+plot(ex2$geometry[ex2$area<1000000],
      col="black", add=T)
 
 ```
@@ -148,3 +157,24 @@ dim(ex3); dim(HIA); dim(regions)
 [1] 31869 2
 
 [1] 5 3
+
+
+# Example 3: Ex2 + outline
+```{r}
+enebakk <- accounting_area[accounting_area$name == "Enebakk",]
+dim(enebakk)
+```
+
+
+```{r}
+ex3 <- ea_homogeneous_area_dev(ex_raster,
+                                accounting_area,
+                               enebakk,
+                                keep2 = "name")
+```
+
+```{r}
+tm_shape(ex3)+
+  tm_polygons(col = "values")
+```
+
