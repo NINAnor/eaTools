@@ -18,7 +18,8 @@ ea_spread_dev <- function(indicator_data,
                       regions,
                       groups,
                       threshold = 1,
-                      tally = FALSE){
+                      tally = FALSE,
+                      simple_join = FALSE){
   ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
       # get the intersections
@@ -27,6 +28,9 @@ ea_spread_dev <- function(indicator_data,
     indicator_split <- sf::st_intersection(indicator_data, regions)
       # calculate area of the intersections
     indicator_split$area <- drop_units(sf::st_area(indicator_split))
+    if(simple_join == TRUE) {
+      return(indicator_split)
+    }
   } else stop("The input data is not in a supported format. Both indicator_data and regions need to be sf objects.")
       # Calculate the area weighted mean indicator values for each region
   
@@ -109,8 +113,8 @@ out1 <- ea_spread_dev(indicator_data = ex_polygons_zoom,
 plot(out1[,2])
 ```
 
-## Example 2: Aggregate, but don't spread
-Now use the function
+## Example 2: Simple tally
+
 ```{r}
 ea_spread_dev(indicator_data = ex_polygons_zoom,
                  indicator = indicator,
@@ -119,8 +123,14 @@ ea_spread_dev(indicator_data = ex_polygons_zoom,
                  tally = T)
 ```
 
-### Test on bigegr data
+### Simple join
 ```{r}
+out_3 <- ea_spread_dev(indicator_data = ex_polygons_zoom,
+                 indicator = indicator,
+                 regions = myRegions,
+                 groups = values,
+                 simple_join = T)
 
 ```
 
+<!-- Now find a way to get the area weighted indicator values per region. -->

@@ -42,7 +42,7 @@
 #' groups = values)
 #' # And plot the results
 #' plot(out[,2])
-#' #  Example 2: Aggregate, but don't spread
+#' #  Example 2: Simple tally
 #' ea_spread(indicator_data = ex_polygons_zoom,
 #'   indicator = indicator,
 #'   regions = myRegions,
