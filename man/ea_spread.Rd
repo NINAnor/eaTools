@@ -4,7 +4,14 @@
 \alias{ea_spread}
 \title{ea_spread}
 \usage{
-ea_spread(indicator_data, indicator, regions, groups, threshold = 1)
+ea_spread(
+  indicator_data,
+  indicator,
+  regions,
+  groups,
+  threshold = 1,
+  tally = FALSE
+)
 }
 \arguments{
 \item{indicator_data}{A spatial object (currently inly sf objects are supported) containing scaled indicator values}
@@ -16,9 +23,12 @@ ea_spread(indicator_data, indicator, regions, groups, threshold = 1)
 \item{groups}{Name in \code{regions} containing homogeneous area classes. Should be unquoted.}
 
 \item{threshold}{Number of data points (i.e. unique indicator values) needed to calculate an average indicator value. Defaults to 1 (i.e. no threshold).}
+
+\item{tally}{Logical. Should the function return an sf object with wall-to-wall mean indicator values (default, tally = FALSE), or should the function simply count the number of datapoints and sum the indicator area for each region.}
 }
 \value{
-The returned object is an \code{sf} object containing homogeneous area classes and mean indicator values.
+In case tally = FALSE, the returned object is an \code{sf} object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
+= TRUE, a data frame is returned.
 }
 \description{
 A function to aggregate (area weigted means) indicator values stored in a spatial object (sf or stars object) for each homogeneous area class, and subsequently to spread these values out to populate all the area for the homogeneous area classes.
@@ -46,4 +56,10 @@ regions = myRegions,
 groups = values)
 # And plot the results
 plot(out[,2])
+#  Example 2: Aggregate, but don't spread
+ea_spread(indicator_data = ex_polygons_zoom,
+  indicator = indicator,
+  regions = myRegions,
+  groups = values,
+  tally = T)
 }
