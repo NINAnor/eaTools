@@ -9,10 +9,13 @@
 #' @param keep1 Column names in delineation1 to keep in the returned object. Only if delineation1 is an sf object.
 #' @param keep2 Column names in delineation2 to keep in the returned object.
 #'
-#' @return The function returns an sf object with polygons defined by the intersection of `delineation1` and `delineation2`.
+#' @return The function returns an sf object with polygons defined by the intersection of `delineation1`, `delineation2`
+#' and `outline`.
 #' `Delineation1` can be a raster (stars object), and will then be vectorised, and neighboring cells with identical values
-#' will be merged. `Delineation1` and `delineation2` should normally be completely overlapping, since areas not covered by both
+#' will be merged.
+#' `Delineation1` and `delineation2` should normally be completely overlapping, since areas not covered by both
 #' layers will be dropped in the output.
+#'  An optional `outline` layer can be used to cut away areas, typically areas outside the accounting area.
 #'
 #' @import stars
 #' @import sf
@@ -40,7 +43,7 @@
 #'    tmap::tm_polygons(col = "blue", border.col = "black")
 #' # Example 3: Example 2 + outline
 #' enebakk <- accounting_area[accounting_area$name == "Enebakk",]
-#' ex3 <- ea_homogeneous_area_dev(ex_raster,
+#' ex3 <- ea_homogeneous_area(ex_raster,
 #'           accounting_area,
 #'           enebakk,
 #'           keep2 = "name")
