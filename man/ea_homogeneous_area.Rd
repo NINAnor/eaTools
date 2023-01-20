@@ -9,7 +9,8 @@ ea_homogeneous_area(
   delineation2,
   outline,
   keep1 = NULL,
-  keep2 = NULL
+  keep2 = NULL,
+  groups
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ ea_homogeneous_area(
 \item{keep1}{Column names in delineation1 to keep in the returned object. Only if delineation1 is an sf object.}
 
 \item{keep2}{Column names in delineation2 to keep in the returned object.}
+
+\item{groups}{If \code{delineation1} is a stars object, select the attribute that designates the homogeneous areas class.}
 }
 \value{
 The function returns an sf object with polygons defined by the intersection of \code{delineation1}, \code{delineation2}
@@ -50,7 +53,8 @@ names(ex1)
 # Example 2: One stars object and one sf object
 ex2 <- ea_homogeneous_area(ex_raster,
           accounting_area,
-          keep2 = "name")
+          keep2 = "name",
+          groups = values)
 tmap::tm_shape(ex2)+
  tmap::tm_polygons(col = "values")+
 tmap::tm_shape(ex2[ex2$name == "Enebakk",])+
@@ -60,7 +64,8 @@ enebakk <- accounting_area[accounting_area$name == "Enebakk",]
 ex3 <- ea_homogeneous_area(ex_raster,
           accounting_area,
           enebakk,
-          keep2 = "name")
+          keep2 = "name",
+          groups = values)
 tmap::tm_shape(ex3)+
           tmap::tm_polygons(col = "values")
 }
