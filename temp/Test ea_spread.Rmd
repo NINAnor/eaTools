@@ -134,3 +134,57 @@ out_3 <- ea_spread_dev(indicator_data = ex_polygons_zoom,
 ```
 
 <!-- Now find a way to get the area weighted indicator values per region. -->
+
+```{r}
+out_3 %>%
+  mutate(area = units::drop_units(st_area(out_3))) %>%
+  group_by(values) %>%
+  summarise(w_mean = stats::weighted.mean(indicator, area),
+            mean = mean(indicator))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
