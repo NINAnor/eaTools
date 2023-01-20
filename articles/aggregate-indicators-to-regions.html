@@ -155,7 +155,8 @@ Figure 3: Example data produced by zoomin in on four grid cells in the above fig
 <p>We now want to calculate the area weighted mean for each homogeneous area class, i.e. the three different coloured grid cells in Fig. <a href="#fig:exampla-data-zoom">3</a>.</p>
 <p>First we process the <code>ex_raster_zoom</code> and define <em>homogeneous areas</em> based on the cell values.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">myRegions</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ea_homogeneous_area.html">ea_homogeneous_area</a></span><span class="op">(</span><span class="va">ex_raster_zoom</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">myRegions</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ea_homogeneous_area.html">ea_homogeneous_area</a></span><span class="op">(</span><span class="va">ex_raster_zoom</span>,</span>
+<span>                                 groups <span class="op">=</span> <span class="va">values</span><span class="op">)</span></span></code></pre></div>
 <p>Then we aggregate the indicator values from ex_polygons_zoom for each homogeneous area class, and spread the mean indicator values across all the grid cells. Even grid cells that originally had no indicator values associated with it will be populated with the area weighted mean of its homogeneous area class. Lets to this step with and without defining a threshold for how many data points we need before calculating an average.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myIndicator</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ea_spread.html">ea_spread</a></span><span class="op">(</span>indicator_data <span class="op">=</span> <span class="va">ex_polygons_zoom</span>,</span>

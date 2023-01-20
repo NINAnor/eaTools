@@ -107,10 +107,11 @@
 <span class="r-in"><span><span class="va">ex_polygons_zoom</span><span class="op">$</span><span class="va">indicator</span> <span class="op">&lt;-</span> <span class="fu"><a href="ea_normalise.html">ea_normalise</a></span><span class="op">(</span><span class="va">ex_polygons_zoom</span>,</span></span>
 <span class="r-in"><span><span class="st">"condition_variable_2"</span>,</span></span>
 <span class="r-in"><span>upper_reference_level <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Tweak the data slightly for exagerated effect</span></span></span>
+<span class="r-in"><span><span class="co"># Tweak the data slightly for exaggerated effect</span></span></span>
 <span class="r-in"><span><span class="va">ex_polygons_zoom</span><span class="op">$</span><span class="va">indicator</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="co"># Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.</span></span></span>
-<span class="r-in"><span><span class="va">myRegions</span> <span class="op">&lt;-</span> <span class="fu"><a href="ea_homogeneous_area.html">ea_homogeneous_area</a></span><span class="op">(</span><span class="va">ex_raster_zoom</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">myRegions</span> <span class="op">&lt;-</span> <span class="fu"><a href="ea_homogeneous_area.html">ea_homogeneous_area</a></span><span class="op">(</span><span class="va">ex_raster_zoom</span>,</span></span>
+<span class="r-in"><span>groups <span class="op">=</span> <span class="va">values</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># Now use the function</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">ea_spread</span><span class="op">(</span>indicator_data <span class="op">=</span> <span class="va">ex_polygons_zoom</span>,</span></span>
 <span class="r-in"><span>indicator <span class="op">=</span> <span class="va">indicator</span>,</span></span>
