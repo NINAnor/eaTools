@@ -49,13 +49,20 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ea_spread</span><span class="op">(</span><span class="va">indicator_data</span>, <span class="va">indicator</span>, <span class="va">regions</span>, <span class="va">groups</span>, threshold <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ea_spread</span><span class="op">(</span></span>
+<span>  <span class="va">indicator_data</span>,</span>
+<span>  <span class="va">indicator</span>,</span>
+<span>  <span class="va">regions</span>,</span>
+<span>  <span class="va">groups</span>,</span>
+<span>  threshold <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  summarise <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>indicator_data</dt>
-<dd><p>A spatial object (currently inly sf objects are supported) containing scaled indicator values</p></dd>
+<dd><p>A spatial object (currently inlo sf objects are supported) containing scaled indicator values</p></dd>
 
 
 <dt>indicator</dt>
@@ -63,7 +70,7 @@
 
 
 <dt>regions</dt>
-<dd><p>A spatial object (currently only stars objects are supported) where cell values assign areas to homogeneous area classes.</p></dd>
+<dd><p>An sf object where polygon values (slect which colum using the <code>groups</code> argument) assign areas to homogeneous area classes. If you have a raster, use <code>ea_homogeneous_areas()</code> to convert it to sf.</p></dd>
 
 
 <dt>groups</dt>
@@ -73,12 +80,17 @@
 <dt>threshold</dt>
 <dd><p>Number of data points (i.e. unique indicator values) needed to calculate an average indicator value. Defaults to 1 (i.e. no threshold).</p></dd>
 
+
+<dt>summarise</dt>
+<dd><p>Logical. Should the function return an sf object with wall-to-wall mean indicator values (default, summarise = FALSE), or should the function return a data frame with summary statistics</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>The returned object is an <code>sf</code> object containing homogeneous area classes and mean indicator values.</p>
+<p>In case tally = FALSE, the returned object is an <code>sf</code> object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
+= TRUE, a data frame is returned.</p>
     </div>
 
     <div class="section level2">
@@ -107,6 +119,18 @@
 <span class="r-in"><span><span class="co"># And plot the results</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">out</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="ea_spread-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co">#  Example 2: Summary output</span></span></span>
+<span class="r-in"><span><span class="fu">ea_spread</span><span class="op">(</span>indicator_data <span class="op">=</span> <span class="va">ex_polygons_zoom</span>,</span></span>
+<span class="r-in"><span>  indicator <span class="op">=</span> <span class="va">indicator</span>,</span></span>
+<span class="r-in"><span>  regions <span class="op">=</span> <span class="va">myRegions</span>,</span></span>
+<span class="r-in"><span>  groups <span class="op">=</span> <span class="va">values</span>,</span></span>
+<span class="r-in"><span>  summarise <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   values data_points total_area area_weighted_mean  mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>      1          30     <span style="text-decoration: underline;">69</span>676.             0.241  0.371</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>      2           7     <span style="text-decoration: underline;">58</span>330.             0.086<span style="text-decoration: underline;">4</span> 0.381</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>      3           3      <span style="text-decoration: underline;">3</span>352.             0.659  0.704</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
