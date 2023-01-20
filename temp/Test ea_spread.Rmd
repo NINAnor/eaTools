@@ -18,19 +18,15 @@ ea_spread_dev <- function(indicator_data,
                       regions,
                       groups,
                       threshold = 1,
-                      tally = FALSE,
-                      simple_join = FALSE){
+                      summarise = FALSE){
   ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
       # get the intersections
     st_agr(indicator_data) <- "constant"
     st_agr(regions) <- "constant"
-    indicator_split <- sf::st_intersection(indicator_data, regions)
+    indicator_split <<- sf::st_intersection(indicator_data, regions)
       # calculate area of the intersections
-    indicator_split$area <- drop_units(sf::st_area(indicator_split))
-    if(simple_join == TRUE) {
-      return(indicator_split)
-    }
+    indicator_split$area <<- drop_units(sf::st_area(indicator_split))
   } else stop("The input data is not in a supported format. Both indicator_data and regions need to be sf objects.")
       # Calculate the area weighted mean indicator values for each region
   
@@ -40,7 +36,7 @@ ea_spread_dev <- function(indicator_data,
   groups_int <- enquo(groups)
   indicator_int <- enquo(indicator)
   
-  if(tally == FALSE){
+  if(summarise == FALSE){
   myWeightedMeans <- indicator_split %>%
       group_by(!!groups_int) %>%
       mutate(n = n(),
@@ -59,11 +55,15 @@ ea_spread_dev <- function(indicator_data,
     select(ID, meanIndicatorValue)
   return(regions)
   } else {
-    tally <- as.data.frame(indicator_split) %>%
+    summary_output <- as.data.frame(indicator_split) %>%
       group_by(!!groups_int) %>%
       summarise(data_points = n(),
-                area = sum(area))
-    return(tally)
+                total_area = sum(area),
+                area_weighted_mean = stats::weighted.mean(
+                                                x = indicator,
+                                                w = area, na.rm=T),
+                mean = mean(indicator, na.rm = T))
+    return(summary_output)
   }
 }
 ```
@@ -123,25 +123,16 @@ ea_spread_dev(indicator_data = ex_polygons_zoom,
                  tally = T)
 ```
 
-### Simple join
+Summary otput
 ```{r}
-out_3 <- ea_spread_dev(indicator_data = ex_polygons_zoom,
+ea_spread_dev(indicator_data = ex_polygons_zoom,
                  indicator = indicator,
                  regions = myRegions,
                  groups = values,
-                 simple_join = T)
-
+                 summarise = T)
 ```
 
-<!-- Now find a way to get the area weighted indicator values per region. -->
 
-```{r}
-out_3 %>%
-  mutate(area = units::drop_units(st_area(out_3))) %>%
-  group_by(values) %>%
-  summarise(w_mean = stats::weighted.mean(indicator, area),
-            mean = mean(indicator))
-```
 
 
 
