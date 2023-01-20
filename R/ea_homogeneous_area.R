@@ -8,6 +8,7 @@
 #' @param outline An optional sf object to mask out areas outside it.
 #' @param keep1 Column names in delineation1 to keep in the returned object. Only if delineation1 is an sf object.
 #' @param keep2 Column names in delineation2 to keep in the returned object.
+#' @param groups If `delineation1` is a stars object, select the attribute that designates the homogeneous areas class.
 #'
 #' @return The function returns an sf object with polygons defined by the intersection of `delineation1`, `delineation2`
 #' and `outline`.
@@ -36,7 +37,8 @@
 #' # Example 2: One stars object and one sf object
 #' ex2 <- ea_homogeneous_area(ex_raster,
 #'           accounting_area,
-#'           keep2 = "name")
+#'           keep2 = "name",
+#'           groups = values)
 #' tmap::tm_shape(ex2)+
 #'  tmap::tm_polygons(col = "values")+
 #' tmap::tm_shape(ex2[ex2$name == "Enebakk",])+
@@ -46,38 +48,51 @@
 #' ex3 <- ea_homogeneous_area(ex_raster,
 #'           accounting_area,
 #'           enebakk,
-#'           keep2 = "name")
+#'           keep2 = "name",
+#'           groups = values)
 #' tmap::tm_shape(ex3)+
 #'           tmap::tm_polygons(col = "values")
 ea_homogeneous_area <- function(delineation1,
                                 delineation2,
                                 outline,
                                 keep1 = NULL,
-                                keep2 = NULL){
+                                keep2 = NULL,
+                                groups){
+  geometry <- NULL
   if("stars" %in% class(delineation1)){
+
     if(max(dim(delineation1)) > 10000) warning("You have inputted a large raster file. Vectorisation might take a long time.")
-    HIA <- sf::st_as_sf(delineation1, as_points = FALSE, merge = TRUE)
+    if(missing(groups)) warning("No groups argument provided. Please check output if this is really what you want.")
+
+    groups_int <- enquo(groups)
+    myArea <- sf::st_as_sf(delineation1,
+                           as_points = FALSE,
+                           merge = FALSE) %>%
+      group_by(!!groups_int) %>%
+      summarise(geometry = sf::st_union(geometry)) %>%
+      ungroup() %>%
+      st_cast(to = "POLYGON")
   }
   if("sf" %in% class(delineation1)){
-    HIA <- delineation1 %>%
+    myArea <- delineation1 %>%
       select(all_of(keep1))
   }
   if(missing(delineation2)) {
-    return(HIA)
+    return(myArea)
   } else{
     if("sf" %in% class(delineation2)){
-      HIA <- delineation2 %>%
+      myArea <- delineation2 %>%
         select(all_of(keep2)) %>%
-        st_intersection(HIA) %>%
+        st_intersection(myArea) %>%
         st_collection_extract() %>%
         st_cast(to = "POLYGON")
       if(missing(outline)){
-        return(HIA)
+        return(myArea)
       } else {
         if("sf" %in% class(outline)){
-          HIA_outline <- HIA %>%
+          myArea_outline <- myArea %>%
             st_intersection(outline)
-          return(HIA_outline)
+          return(myArea_outline)
         } else stop("Outline is not an sf object")
       }
     } else stop("Delineation2 is not an sf object")

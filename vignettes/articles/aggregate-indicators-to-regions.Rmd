@@ -99,7 +99,8 @@ We now want to calculate the area weighted mean for each homogeneous area class,
 First we process the `ex_raster_zoom` and define *homogeneous areas* based on the cell values.
 
 ```{r}
-myRegions <- ea_homogeneous_area(ex_raster_zoom)
+myRegions <- ea_homogeneous_area(ex_raster_zoom,
+                                 groups = values)
 ```
 
 Then we aggregate the indicator values from ex_polygons_zoom for each homogeneous area class, and spread the mean indicator values across all the grid cells. Even grid cells that originally had no indicator values associated with it will be populated with the area weighted mean of its homogeneous area class. Lets to this step with and without defining a threshold for how many data points we need before calculating an average.

@@ -45,10 +45,11 @@ ex_polygons_zoom <- sf::st_crop(ex_polygons, ex_raster_zoom)
 ex_polygons_zoom$indicator <- ea_normalise(ex_polygons_zoom,
 "condition_variable_2",
 upper_reference_level = 7)
-# Tweak the data slightly for exagerated effect
+# Tweak the data slightly for exaggerated effect
 ex_polygons_zoom$indicator[2:6] <- 1
 # Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.
-myRegions <- ea_homogeneous_area(ex_raster_zoom)
+myRegions <- ea_homogeneous_area(ex_raster_zoom,
+groups = values)
 # Now use the function
 out <- ea_spread(indicator_data = ex_polygons_zoom,
 indicator = indicator,

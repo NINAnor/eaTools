@@ -31,10 +31,11 @@
 #' ex_polygons_zoom$indicator <- ea_normalise(ex_polygons_zoom,
 #' "condition_variable_2",
 #' upper_reference_level = 7)
-#' # Tweak the data slightly for exagerated effect
+#' # Tweak the data slightly for exaggerated effect
 #' ex_polygons_zoom$indicator[2:6] <- 1
 #' # Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.
-#' myRegions <- ea_homogeneous_area(ex_raster_zoom)
+#' myRegions <- ea_homogeneous_area(ex_raster_zoom,
+#' groups = values)
 #' # Now use the function
 #' out <- ea_spread(indicator_data = ex_polygons_zoom,
 #' indicator = indicator,
@@ -54,14 +55,14 @@ ea_spread <- function(indicator_data,
                       groups,
                       threshold = 1,
                       summarise = FALSE){
-  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
+  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- indicator_split <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
     # get the intersections
     st_agr(indicator_data) <- "constant"
     st_agr(regions) <- "constant"
-    indicator_split <<- sf::st_intersection(indicator_data, regions)
+    indicator_split <- sf::st_intersection(indicator_data, regions)
     # calculate area of the intersections
-    indicator_split$area <<- drop_units(sf::st_area(indicator_split))
+    indicator_split$area <- drop_units(sf::st_area(indicator_split))
   } else stop("The input data is not in a supported format. Both indicator_data and regions need to be sf objects.")
   # Calculate the area weighted mean indicator values for each region
 
