@@ -4,21 +4,31 @@
 \alias{ea_spread}
 \title{ea_spread}
 \usage{
-ea_spread(indicator_data, indicator, regions, groups, threshold = 1)
+ea_spread(
+  indicator_data,
+  indicator,
+  regions,
+  groups,
+  threshold = 1,
+  summarise = FALSE
+)
 }
 \arguments{
-\item{indicator_data}{A spatial object (currently inly sf objects are supported) containing scaled indicator values}
+\item{indicator_data}{A spatial object (currently inlo sf objects are supported) containing scaled indicator values}
 
 \item{indicator}{Column name in \code{indicator_data} containing indicator values. Should be unquoted.}
 
-\item{regions}{A spatial object (currently only stars objects are supported) where cell values assign areas to homogeneous area classes.}
+\item{regions}{An sf object where polygon values (slect which colum using the \code{groups} argument) assign areas to homogeneous area classes. If you have a raster, use \code{ea_homogeneous_areas()} to convert it to sf.}
 
 \item{groups}{Name in \code{regions} containing homogeneous area classes. Should be unquoted.}
 
 \item{threshold}{Number of data points (i.e. unique indicator values) needed to calculate an average indicator value. Defaults to 1 (i.e. no threshold).}
+
+\item{summarise}{Logical. Should the function return an sf object with wall-to-wall mean indicator values (default, summarise = FALSE), or should the function return a data frame with summary statistics}
 }
 \value{
-The returned object is an \code{sf} object containing homogeneous area classes and mean indicator values.
+In case tally = FALSE, the returned object is an \code{sf} object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
+= TRUE, a data frame is returned.
 }
 \description{
 A function to aggregate (area weigted means) indicator values stored in a spatial object (sf or stars object) for each homogeneous area class, and subsequently to spread these values out to populate all the area for the homogeneous area classes.
@@ -46,4 +56,10 @@ regions = myRegions,
 groups = values)
 # And plot the results
 plot(out[,2])
+#  Example 2: Summary output
+ea_spread(indicator_data = ex_polygons_zoom,
+  indicator = indicator,
+  regions = myRegions,
+  groups = values,
+  summarise = TRUE)
 }
