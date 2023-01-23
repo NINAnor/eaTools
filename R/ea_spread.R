@@ -79,11 +79,11 @@ ea_spread <- function(indicator_data,
     summarise(total_area = sum(area),
               data_points = n(),
               area_weighted_mean_indicator_value =
-                stats::weighted.mean(x = indicator_NA, w = area),
-              unweighted_mean_indicator_value = mean(indicator_NA)) %>%  #na.rm=T
+                stats::weighted.mean(x = indicator_NA, w = area, na.rm=TRUE),
+              unweighted_mean_indicator_value = mean(indicator_NA, na.rm=TRUE)) %>%  #na.rm=T
     mutate("ID" = !!groups_int) %>%
     as.data.frame() %>%
-    select(-SHAPE)
+    select(-any_of(c("SHAPE", "geometry")))
 
   if(summarise == FALSE){
     # paste these new values into the regions data set
