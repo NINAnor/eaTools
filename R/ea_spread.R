@@ -55,7 +55,7 @@ ea_spread <- function(indicator_data,
                       groups,
                       threshold = 1,
                       summarise = FALSE){
-  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- indicator_split <- NULL
+  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
     # get the intersections
     st_agr(indicator_data) <- "constant"
@@ -72,34 +72,29 @@ ea_spread <- function(indicator_data,
   groups_int <- enquo(groups)
   indicator_int <- enquo(indicator)
 
-  if(summarise == FALSE){
-    myWeightedMeans <- indicator_split %>%
-      group_by(!!groups_int) %>%
-      mutate(n = n(),
-             indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
-      summarise(meanIndicatorValue =
-                  stats::weighted.mean(x = indicator_NA,
-                                       w = area)) %>%
-      mutate("ID" = !!groups_int) %>%
-      as.data.frame() %>%
-      select(-SHAPE)
+  summary_output <- indicator_split %>%
+    group_by(!!groups_int) %>%
+    mutate(n = n(),
+           indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
+    summarise(total_area = sum(area),
+              data_points = n(),
+              area_weighted_mean_indicator_value =
+                stats::weighted.mean(x = indicator_NA, w = area),
+              unweighted_mean_indicator_value = mean(indicator_NA)) %>%  #na.rm=T
+    mutate("ID" = !!groups_int) %>%
+    as.data.frame() %>%
+    select(-SHAPE)
 
+  if(summarise == FALSE){
     # paste these new values into the regions data set
     regions <- regions %>%
       mutate("ID" = !!groups_int) %>%
-      left_join(myWeightedMeans, by = "ID") %>%
-      select(ID, meanIndicatorValue)
+      left_join(summary_output, by = "ID") %>%
+      select(ID, area_weighted_mean_indicator_value)
     return(regions)
   } else {
-    summary_output <- as.data.frame(indicator_split) %>%
-      group_by(!!groups_int) %>%
-      summarise(data_points = n(),
-                total_area = sum(area),
-                area_weighted_mean = stats::weighted.mean(
-                  x = indicator,
-                  w = area, na.rm=T),
-                mean = mean(indicator, na.rm = T))
-    return(summary_output)
+    summary_output %>%
+      select(-ID)
   }
 }
 

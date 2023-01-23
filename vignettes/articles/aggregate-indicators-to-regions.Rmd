@@ -77,7 +77,7 @@ ggplot(ex_polygons_zoom, aes(x = indicator))+
   theme_bw(base_size = 12)
 ```
 
-```{r exampla-data-zoom, fig.cap="Example data produced by zoomin in on four grid cells in the above figure."}
+```{r exampel-data-zoom, fig.cap="Example data produced by zooming in on four grid cells in the above figure."}
 tm_shape(ex_raster_zoom)+
   tm_raster(style="cat")+
   tm_shape(ex_polygons_zoom)+
@@ -94,9 +94,9 @@ I will manipulate the data set slightly, just to make some contrasts between the
 ex_polygons_zoom$indicator[2:6] <- 1
 ```
 
-We now want to calculate the area weighted mean for each homogeneous area class, i.e. the three different coloured grid cells in Fig. \@ref(fig:exampla-data-zoom).
+We now want to calculate the area weighted mean for each homogeneous area class, i.e. the three different colored grid cells in Fig. \@ref(fig:exampel-data-zoom).
 
-First we process the `ex_raster_zoom` and define *homogeneous areas* based on the cell values.
+First we process `ex_raster_zoom` (vectorise it) and define *homogeneous areas* based on the cell values.
 
 ```{r}
 myRegions <- ea_homogeneous_area(ex_raster_zoom,
@@ -123,7 +123,7 @@ myIndicator_noThreshold <- ea_spread(indicator_data = ex_polygons_zoom,
 ```{r easpread-out, fig.cap="Example where the area weighted averages of the indicator values in the small polygons are spread over the raster cells with each homogeneous area class. In the left example, only homogeneous area class with more than 5 data points get indicator values."}
 tmap_arrange(
   tm_shape(myIndicator)+
-    tm_polygons(col = "meanIndicatorValue",
+    tm_polygons(col = "area_weighted_mean_indicator_value",
                 title="Indicator value",
                 palette = "RdYlGn",
                 breaks = seq(0,1,0.2))+
@@ -137,7 +137,7 @@ tmap_arrange(
               title = "Threshold = 5 data points")
   ,
   tm_shape(myIndicator_noThreshold)+
-    tm_polygons(col = "meanIndicatorValue",
+    tm_polygons(col = "area_weighted_mean_indicator_value",
                 title="Indicator value",
                 palette = "RdYlGn",
                 breaks = seq(0,1,0.2))+
@@ -156,8 +156,18 @@ In the map above, the color of the cells are in a way the average color of the p
 
 If we look at the right hand figure, homogeneous area class 3 is in better condition, but this indicator value is based on very few data points. If we assign a threshold above the number of available data points, the function returns NA.
 
+We can also use the same function to return the values, including some summary statistics, as a dataframe:
+```{r}
+ea_spread(indicator_data = ex_polygons_zoom,
+                         indicator = indicator,
+                         regions = myRegions,
+                         groups = values,
+                         summarise = T)
+```
+
+
 We can then rasterise this back again, because a raster format is more useful for subsequent analyses, such as aggregating indicators. Here we can use an existing function from the `sf` package.
 
-```{r}
+```{r, eval=F}
 newIndicator_raster <- stars::st_rasterize(myIndicator, ex_raster_zoom)
 ```
