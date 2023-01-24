@@ -24,7 +24,7 @@ ea_spread_dev <- function(indicator_data,
     # get the intersections
     st_agr(indicator_data) <- "constant"
     st_agr(regions) <- "constant"
-    indicator_split <<- sf::st_intersection(indicator_data, regions)
+    indicator_split <- sf::st_intersection(indicator_data, regions)
     # calculate area of the intersections
     indicator_split$area <- drop_units(sf::st_area(indicator_split))
   } else stop("The input data is not in a supported format. Both indicator_data and regions need to be sf objects.")
@@ -42,30 +42,24 @@ ea_spread_dev <- function(indicator_data,
   }
   
   mySD <- function(.data){
-    
     if (dplyr::is_grouped_df(.data)) {
-       return(dplyr::do(.data, mySD(.)))
-    }
-    
+       return(dplyr::do(.data, mySD(.)))}
     newx <- .data %>%
       as.data.frame() %>%
       select(!!indicator_int) %>%
       unlist() %>%
       boot(myMean, R = 1000)
       as_tibble(sd(newx$t))
-    
   }
   
-    addSD <<- indicator_split %>% 
+  addSD <- indicator_split %>% 
       group_by(!!groups_int) %>%
       mySD() %>%
       mutate("ID" = !!groups_int) %>%
       ungroup() %>%
       select(all_of(c("ID", "sd" = "value")))
 
-
-
-  summary_output <<- indicator_split %>%
+  summary_output <- indicator_split %>%
     group_by(!!groups_int) %>%
     mutate(n = n(),
            indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
@@ -76,9 +70,8 @@ ea_spread_dev <- function(indicator_data,
     mutate("ID" = !!groups_int) %>%
     as.data.frame() %>%
     select(-any_of(c("SHAPE", "geometry"))) %>%
-    left_join(addSD, by = "ID")
-  
-  
+    left_join(addSD, by = "ID") %>%
+    mutate(sd = na_if(w_mean, "NaN"))
 
   if(summarise == FALSE){
     # paste these new values into the regions data set
