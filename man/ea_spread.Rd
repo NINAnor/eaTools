@@ -27,8 +27,7 @@ ea_spread(
 \item{summarise}{Logical. Should the function return an sf object with wall-to-wall mean indicator values (default, summarise = FALSE), or should the function return a data frame with summary statistics}
 }
 \value{
-In case tally = FALSE, the returned object is an \code{sf} object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
-= TRUE, a data frame is returned.
+In case tally = FALSE, the returned object is an \code{sf} object containing homogeneous area classes and wall-to-wall mean indicator values. If tally = TRUE, a data frame with summary statistics is returned. Indicator values are areas weighted (w_mean). If summarise = TRUE, the unweighted mean is also returned (mean), along with the number of data points (n), the total area with indicator data, and the standard deviation. The SD is returned in both cases, and is produced from non-parametric bootstrapping with 1000 replications.
 }
 \description{
 A function to aggregate (area weigted means) indicator values stored in a spatial object (sf or stars object) for each homogeneous area class, and subsequently to spread these values out to populate all the area for the homogeneous area classes.

@@ -57,7 +57,7 @@ ea_spread_dev <- function(indicator_data,
       mySD() %>%
       mutate("ID" = !!groups_int) %>%
       ungroup() %>%
-      select(all_of(c("ID", "sd" = "value")))
+      select(all_of(c("ID", sd = "value")))
 
   summary_output <- indicator_split %>%
     group_by(!!groups_int) %>%
@@ -71,14 +71,14 @@ ea_spread_dev <- function(indicator_data,
     as.data.frame() %>%
     select(-any_of(c("SHAPE", "geometry"))) %>%
     left_join(addSD, by = "ID") %>%
-    mutate(sd = na_if(w_mean, "NaN"))
+    mutate(sd = replace(sd, is.na(w_mean), NA))
 
   if(summarise == FALSE){
     # paste these new values into the regions data set
     regions <- regions %>%
       mutate("ID" = !!groups_int) %>%
       left_join(summary_output, by = "ID") %>%
-      select(ID, w_mean)
+      select(ID, w_mean, sd)
     return(regions)
   } else {
     summary_output %>%
