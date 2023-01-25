@@ -89,8 +89,7 @@
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>In case tally = FALSE, the returned object is an <code>sf</code> object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
-= TRUE, a data frame is returned.</p>
+<p>In case tally = FALSE, the returned object is an <code>sf</code> object containing homogeneous area classes and wall-to-wall mean indicator values. If tally = TRUE, a data frame with summary statistics is returned. Indicator values are areas weighted (w_mean). If summarise = TRUE, the unweighted mean is also returned (mean), along with the number of data points (n), the total area with indicator data, and the standard deviation. The SD is returned in both cases, and is produced from non-parametric bootstrapping with 1000 replications.</p>
     </div>
 
     <div class="section level2">
@@ -126,14 +125,10 @@
 <span class="r-in"><span>  regions <span class="op">=</span> <span class="va">myRegions</span>,</span></span>
 <span class="r-in"><span>  groups <span class="op">=</span> <span class="va">values</span>,</span></span>
 <span class="r-in"><span>  summarise <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   values total_area data_points area_weighted_mean_indicator_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1  69675.832          30                         0.24102147</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      2  58330.105           7                         0.08642357</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      3   3351.623           3                         0.65946526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   unweighted_mean_indicator_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                       0.3708932</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                       0.3810810</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                       0.7039941</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   values total_area  n     w_mean      mean         sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1  69675.832 30 0.24102147 0.3708932 0.07024698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      2  58330.105  7 0.08642357 0.3810810 0.12185424</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      3   3351.623  3 0.65946526 0.7039941 0.21252193</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
