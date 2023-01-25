@@ -22,7 +22,7 @@ library(eaTools)
 
 # Introduction
 
-This article explains the use the `ea_normalise()`. Use this function to normalise (also called rescale) condition variables based on defined reference levels (also called reference values).
+This article explains the use the `ea_normalise()`. Use this function to _normalise_ (also called _rescale_) condition variables based on defined reference levels (also called reference values).
 
 Let's get some example data.
 
@@ -101,7 +101,7 @@ eaTools::ea_normalise(data = ex_polygons,
 
 ## Export values
 
-When you've found the correct settings for your normalisation, you can export the new values like this
+When you've found the correct settings for your normalisation, you can export the new values like this.
 
 ```{r}
 ex_polygons$condition_indicator_2 <- eaTools::ea_normalise(data = ex_polygons,
