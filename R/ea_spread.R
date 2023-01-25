@@ -16,6 +16,8 @@
 #' @import stars
 #' @importFrom stats weighted.mean
 #' @import rlang
+#' @importFrom stats sd
+#' @import boot
 #' @export
 #'
 #' @examples
@@ -54,7 +56,7 @@ ea_spread <- function(indicator_data,
                       groups,
                       threshold = 1,
                       summarise = FALSE){
-  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
+  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- w_mean <-  NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
     # get the intersections
     st_agr(indicator_data) <- "constant"
