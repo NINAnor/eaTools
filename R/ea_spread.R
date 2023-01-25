@@ -9,14 +9,15 @@
 #' @param threshold Number of data points (i.e. unique indicator values) needed to calculate an average indicator value. Defaults to 1 (i.e. no threshold).
 #' @param summarise Logical. Should the function return an sf object with wall-to-wall mean indicator values (default, summarise = FALSE), or should the function return a data frame with summary statistics
 #'
-#' @return In case tally = FALSE, the returned object is an `sf` object containing homogeneous area classes and wall-to-wall mean indicator values. If tally
-#' = TRUE, a data frame is returned.
+#' @return In case tally = FALSE, the returned object is an `sf` object containing homogeneous area classes and wall-to-wall mean indicator values. If tally = TRUE, a data frame with summary statistics is returned. Indicator values are areas weighted (w_mean). If summarise = TRUE, the unweighted mean is also returned (mean), along with the number of data points (n), the total area with indicator data, and the standard deviation. The SD is returned in both cases, and is produced from non-parametric bootstrapping with 1000 replications.
 #' @importFrom  units drop_units
 #' @import dplyr
 #' @import sf
 #' @import stars
 #' @importFrom stats weighted.mean
 #' @import rlang
+#' @importFrom stats sd
+#' @import boot
 #' @export
 #'
 #' @examples
@@ -55,7 +56,7 @@ ea_spread <- function(indicator_data,
                       groups,
                       threshold = 1,
                       summarise = FALSE){
-  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
+  ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- w_mean <-  NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
     # get the intersections
     st_agr(indicator_data) <- "constant"
@@ -72,25 +73,49 @@ ea_spread <- function(indicator_data,
   groups_int <- enquo(groups)
   indicator_int <- enquo(indicator)
 
+  myMean <- function(data, i) {
+    d2 <- data[i]
+    mean(d2, na.rm=T)
+  }
+
+  mySD <- function(.data){
+    if (dplyr::is_grouped_df(.data)) {
+      return(dplyr::do(.data, mySD(.)))}
+    newx <- .data %>%
+      as.data.frame() %>%
+      select(!!indicator_int) %>%
+      unlist() %>%
+      boot(myMean, R = 1000)
+    as_tibble(sd(newx$t))
+  }
+
+  addSD <- indicator_split %>%
+    group_by(!!groups_int) %>%
+    mySD() %>%
+    mutate("ID" = !!groups_int) %>%
+    ungroup() %>%
+    select(all_of(c("ID", sd = "value")))
+
   summary_output <- indicator_split %>%
     group_by(!!groups_int) %>%
     mutate(n = n(),
            indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
     summarise(total_area = sum(area),
-              data_points = n(),
-              area_weighted_mean_indicator_value =
-                stats::weighted.mean(x = indicator_NA, w = area),
-              unweighted_mean_indicator_value = mean(indicator_NA)) %>%  #na.rm=T
+              n = n(),
+              w_mean = stats::weighted.mean(x = indicator_NA, w = area, na.rm=TRUE),
+              mean = mean(indicator_NA, na.rm=TRUE)) %>%
     mutate("ID" = !!groups_int) %>%
     as.data.frame() %>%
-    select(-SHAPE)
+    select(-any_of(c("SHAPE", "geometry"))) %>%
+    left_join(addSD, by = "ID") %>%
+    mutate(sd = replace(sd, is.na(w_mean), NA))
 
   if(summarise == FALSE){
     # paste these new values into the regions data set
     regions <- regions %>%
       mutate("ID" = !!groups_int) %>%
       left_join(summary_output, by = "ID") %>%
-      select(ID, area_weighted_mean_indicator_value)
+      select(ID, w_mean, sd)
     return(regions)
   } else {
     summary_output %>%

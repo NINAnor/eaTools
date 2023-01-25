@@ -21,45 +21,69 @@ ea_spread_dev <- function(indicator_data,
                       summarise = FALSE){
   ID <- SHAPE <-area <- indicator_NA <- meanIndicatorValue <- NULL
   if("sf" %in% class(indicator_data) & "sf" %in% class(regions)){
-      # get the intersections
+    # get the intersections
     st_agr(indicator_data) <- "constant"
     st_agr(regions) <- "constant"
-    indicator_split <<- sf::st_intersection(indicator_data, regions)
-      # calculate area of the intersections
-    indicator_split$area <<- drop_units(sf::st_area(indicator_split))
+    indicator_split <- sf::st_intersection(indicator_data, regions)
+    # calculate area of the intersections
+    indicator_split$area <- drop_units(sf::st_area(indicator_split))
   } else stop("The input data is not in a supported format. Both indicator_data and regions need to be sf objects.")
-      # Calculate the area weighted mean indicator values for each region
-  
+  # Calculate the area weighted mean indicator values for each region
+
   if(missing(indicator)) stop("Indicator column is not defined")
   if(missing(groups)) stop("Group is not defined")
-  
+
   groups_int <- enquo(groups)
   indicator_int <- enquo(indicator)
   
-  summary_output <- indicator_split %>%
-      group_by(!!groups_int) %>%
-      mutate(n = n(),
-             indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
-      summarise(total_area = sum(area),
-                data_points = n(),
-                area_weighted_mean_indicator_value = 
-                  stats::weighted.mean(x = indicator_NA, w = area),
-                unweighted_mean_indicator_value = mean(indicator_NA)) %>%  #na.rm=T
-      mutate("ID" = !!groups_int) %>%
+  myMean <- function(data, i) {
+    d2 <- data[i]
+    mean(d2, na.rm=T)
+  }
+  
+  mySD <- function(.data){
+    if (dplyr::is_grouped_df(.data)) {
+       return(dplyr::do(.data, mySD(.)))}
+    newx <- .data %>%
       as.data.frame() %>%
-      select(-SHAPE)
+      select(!!indicator_int) %>%
+      unlist() %>%
+      boot(myMean, R = 1000)
+      as_tibble(sd(newx$t))
+  }
+  
+  addSD <- indicator_split %>% 
+      group_by(!!groups_int) %>%
+      mySD() %>%
+      mutate("ID" = !!groups_int) %>%
+      ungroup() %>%
+      select(all_of(c("ID", sd = "value")))
+
+  summary_output <- indicator_split %>%
+    group_by(!!groups_int) %>%
+    mutate(n = n(),
+           indicator_NA = ifelse(n >=threshold, !!indicator_int, NA))%>%
+    summarise(total_area = sum(area),
+              n = n(),
+              w_mean = stats::weighted.mean(x = indicator_NA, w = area, na.rm=TRUE),
+              mean = mean(indicator_NA, na.rm=TRUE)) %>%  
+    mutate("ID" = !!groups_int) %>%
+    as.data.frame() %>%
+    select(-any_of(c("SHAPE", "geometry"))) %>%
+    left_join(addSD, by = "ID") %>%
+    mutate(sd = replace(sd, is.na(w_mean), NA))
 
   if(summarise == FALSE){
     # paste these new values into the regions data set
-  regions <- regions %>%
-    mutate("ID" = !!groups_int) %>%
-    left_join(summary_output, by = "ID") %>%
-    select(ID, area_weighted_mean_indicator_value)
-  return(regions)
-  } else { 
+    regions <- regions %>%
+      mutate("ID" = !!groups_int) %>%
+      left_join(summary_output, by = "ID") %>%
+      select(ID, w_mean, sd)
+    return(regions)
+  } else {
     summary_output %>%
       select(-ID)
-    }
+  }
 }
 ```
 
@@ -85,12 +109,12 @@ upper_reference_level = 7)
 
 ```
 
-Tweak the data slightly for exagerated effect
+Tweak the data slightly for exaggerated effect
 ```{r}
 ex_polygons_zoom$indicator[2:6] <- 1
 ```
 
-Process the `ex_raster_zoom` and define homogeneous areas based on the cell values.
+Process the `ex_raster_zoom` (vectorose it) and define homogeneous areas based on the cell values.
 ```{r}
 myRegions <- ea_homogeneous_area(ex_raster_zoom,
                                  groups = values)
