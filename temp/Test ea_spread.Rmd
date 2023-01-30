@@ -6,10 +6,22 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
+library(tmap)
+library(dplyr)
+
 ```
 
 ## Testing and developing ea_spread
+
+```{r}
+library(devtools)
+load_all()
+library(dplyr)
+library(sf)
+library(stars)
+```
 
 
 ```{r}
@@ -46,7 +58,7 @@ ea_spread_dev <- function(indicator_data,
       return(dplyr::do(.data, mySD(.)))}
     newx <- .data %>%
       as.data.frame() %>%
-      select(!!indicator_int, area) %>%
+      dplyr::select(!!indicator_int, area) %>%
       boot(myMean, R = 1000)
     as_tibble(sd(newx$t))
   }
@@ -56,7 +68,7 @@ ea_spread_dev <- function(indicator_data,
     mySD() %>%
     mutate("ID" = !!groups_int) %>%
     ungroup() %>%
-    select(all_of(c("ID", sd = "value")))
+    dplyr::select(all_of(c("ID", sd = "value")))
 
   summary_output <- indicator_split %>%
     group_by(!!groups_int) %>%
@@ -68,7 +80,7 @@ ea_spread_dev <- function(indicator_data,
               mean = mean(indicator_NA, na.rm=TRUE)) %>%
     mutate("ID" = !!groups_int) %>%
     as.data.frame() %>%
-    select(-any_of(c("SHAPE", "geometry"))) %>%
+    dplyr::select(-any_of(c("SHAPE", "geometry"))) %>%
     left_join(addSD, by = "ID") %>%
     mutate(sd = replace(sd, is.na(w_mean), NA))
 
@@ -81,7 +93,7 @@ ea_spread_dev <- function(indicator_data,
     return(regions)
   } else {
     summary_output %>%
-      select(-ID)
+      dplyr::select(-ID)
   }
 }
 ```
@@ -174,12 +186,92 @@ ea_spread_dev(indicator_data = ex_polygons_zoom[ex_polygons_zoom$ID %!in% toRemo
 
 It still works
 
+# Example 3: Large rasters
+
+Calculating the intersections of very large vector data sets takes a long time. For these cases it is easier to use raster calculations. 
+
+Scale the indicator
+```{r}
+ex_polygons$indicator <- ea_normalise(ex_polygons,
+                                      "condition_variable_2",
+                                      upper_reference_level = 7)
+
+```
+
+```{r}
+st_crs(ex_raster)==st_crs(ex_polygons)
+```
+If I wanted to rasterize the indicator, this is how. But I don't think I'll need to.
+```{r, warning=T}
+grd = st_as_stars(st_bbox(ex_polygons), dx = 50, dy = 50, values = NA_real_)
+
+ex_polygons <- sf::st_set_crs(ex_polygons, 25833)
+ex_polygons_rasterised <- st_rasterize(ex_polygons["indicator"],
+                                       template = grd)
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(ex_polygons_rasterised)+
+  tm_raster(col = "indicator")+
+tm_shape(ex_polygons)+
+  tm_polygons(col="indicator", alpha=0.2)+
+tm_layout(legend.outside = T)
+```
+
+Then I can share information between the rasters (somehow). TBC.
 
 
+# Example 5: Point sampling polygons data set
+We can also take a representative sample of points from a larger vector data set, and extract the indicator values for those points. 
+The benefit is that points are much faster to work with.
+```{r}
+rSample <- st_sample(ex_polygons, size = 1000)
+rSample_s <- st_sample(ex_polygons, size = 100)
+
+```
+
+```{r}
+rSample2 <- st_extract(ex_raster, rSample)
+```
 
 
+```{r}
+tmap_mode("view")
+tm_shape(ex_raster)+
+  tm_raster(alpha=.3)+
+tm_shape(rSample2)+
+  tm_dots(col = "values")+
+  tm_layout(legend.outside = T)
+```
 
+The values do not match perfectly, but that's just a live transformation thing that has to do with the view mode
+This static map is accurate.
+```{r}
+tmap_mode("plot")
+tm_shape(ex_raster[,5:10, 5:10])+
+  tm_raster(alpha=.3)+
+tm_shape(rSample2)+
+  tm_symbols(col = "values",
+          size=1)+
+  tm_layout(legend.outside = T)
+```
 
+I can also extract values from vector data sets
+```{r}
+ex_raster_vect <- st_as_sf(ex_raster)
+rSample3 <- sf::st_intersection(ex_raster_vect, rSample_s)
+```
+
+```{r}
+tm_shape(ex_raster_vect)+
+  tm_polygons(col = "values", alpha=.8)+
+tm_shape(rSample3)+
+  tm_dots(col="values")+
+tm_layout(legend.outside = T)
+```
+
+This is a perfect fit.
 
 
 
