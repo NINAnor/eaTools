@@ -235,9 +235,9 @@ Figure 4: Example where the area weighted averages of the indicator values in th
 <span>                         groups <span class="op">=</span> <span class="va">values</span>,</span>
 <span>                         summarise <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   values total_area  n     w_mean      mean         sd</span></span>
-<span><span class="co">#&gt; 1      1  69675.832 30 0.24102147 0.3708932 0.06908202</span></span>
-<span><span class="co">#&gt; 2      2  58330.105  7 0.08642357 0.3810810 0.12668358</span></span>
-<span><span class="co">#&gt; 3      3   3351.623  3 0.65946526 0.7039941 0.21331775</span></span></code></pre></div>
+<span><span class="co">#&gt; 1      1  69675.832 30 0.24102147 0.3708932 0.06574245</span></span>
+<span><span class="co">#&gt; 2      2  58330.105  7 0.08642357 0.3810810 0.12490779</span></span>
+<span><span class="co">#&gt; 3      3   3351.623  3 0.65946526 0.7039941 0.22019339</span></span></code></pre></div>
 <p>We can then chose rasterise this back again, because a raster format is more useful for subsequent analyses, such as aggregating indicators. Here we can use an existing function from the <code>sf</code> package.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">newIndicator_raster</span> <span class="op">&lt;-</span> <span class="fu">stars</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/stars/reference/st_rasterize.html" class="external-link">st_rasterize</a></span><span class="op">(</span><span class="va">myIndicator</span>, <span class="va">ex_raster_zoom</span><span class="op">)</span></span></code></pre></div>
