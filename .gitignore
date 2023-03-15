@@ -30,3 +30,5 @@ vignettes/*.pdf
 eaTools.Rproj
 docs
 inst/doc
+temp
+
