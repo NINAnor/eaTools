@@ -1,13 +1,18 @@
 #' ea_normalise
 #'
-#' A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value between 0 and 1, bound by an upper reference level.
+#' A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value 
+#' between 0 and 1, bound by an upper and a lower reference level.
 #'
 #' @param data Data set of class sf
 #' @param vector Numerical vector inside `data` which should be normalised
-#' @param upper_reference_level The upper reference level against which to normalise the `vector`. Can be a single number or a vector of length equal to `vector`.
-#' @param lower_reference_level The lower reference level against which to normalise the `vector`. Defaults to 0. Can be a single number or a vector of length equal to `vector`.
+#' @param upper_reference_level The upper reference level against which to normalise the `vector`. 
+#' Can be a single number or a vector of length equal to `vector`. 
+#' If the indicator direction is negative, `upper_reference_level` should still represent the highest variable limit, i.e. the _worst_ condition in that case.  
+#' @param lower_reference_level The lower reference level against which to normalise the `vector`. Defaults to 0. 
+#' Can be a single number or a vector of length equal to `vector`.
+#' If the indicator direction is negative, `lower_reference_level` should still represent the lowest variable limit, i.e. the _best_ condition in that case. 
 #' @param scaling_function one of c("linear", "sigmoid", "exponential convex", "exponential concave")
-#' @param reverse Logical. Should the indicator values be reversed (i.e. giving a high variable value a low indicator value)
+#' @param reverse Logical. Is the indicator direction negative (i.e. a high variable value should give a low indicator value)
 #' @param break_point Numerical vector or single value indicating the value of the variable which should be scaled to 0.6 in the indicator.
 #' @param optimum Numerical vector or single value indicating the upper reference value for a two-sided indicator.
 #' @param plot Logical. Wheter to return a plot comparing normalised and raw values, or to return the normalised values (default).
@@ -66,13 +71,20 @@
                         (upper_reference_level - optimum))*(-1)+1
                             )
       }
-    } else{
+    } else{ ifelse( reverse!=TRUE,
       indicator <- ifelse(dat[,vector] < break_point,
              ((dat[,vector] - lower_reference_level)/
                (break_point - lower_reference_level))*0.6,
              ((dat[,vector] - break_point)/
                 (upper_reference_level - break_point))*(1-0.6)+0.6
-             )
+             ),
+      indicator <- ifelse(dat[,vector] < break_point,
+                          ((dat[,vector] - lower_reference_level)/
+                             (break_point - lower_reference_level))*0.4,
+                          ((dat[,vector] - break_point)/
+                             (upper_reference_level - break_point))*(1-0.4)+0.4
+      )
+     )
     }
     indicator[indicator > 1] <- 1
     indicator[indicator < 0] <- 0

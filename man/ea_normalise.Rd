@@ -21,13 +21,17 @@ ea_normalise(
 
 \item{vector}{Numerical vector inside \code{data} which should be normalised}
 
-\item{upper_reference_level}{The upper reference level against which to normalise the \code{vector}. Can be a single number or a vector of length equal to \code{vector}.}
+\item{upper_reference_level}{The upper reference level against which to normalise the \code{vector}.
+Can be a single number or a vector of length equal to \code{vector}.
+If the indicator direction is negative, \code{upper_reference_level} should still represent the highest variable limit, i.e. the \emph{worst} condition in that case.}
 
-\item{lower_reference_level}{The lower reference level against which to normalise the \code{vector}. Defaults to 0. Can be a single number or a vector of length equal to \code{vector}.}
+\item{lower_reference_level}{The lower reference level against which to normalise the \code{vector}. Defaults to 0.
+Can be a single number or a vector of length equal to \code{vector}.
+If the indicator direction is negative, \code{lower_reference_level} should still represent the lowest variable limit, i.e. the \emph{best} condition in that case.}
 
 \item{scaling_function}{one of c("linear", "sigmoid", "exponential convex", "exponential concave")}
 
-\item{reverse}{Logical. Should the indicator values be reversed (i.e. giving a high variable value a low indicator value)}
+\item{reverse}{Logical. Is the indicator direction negative (i.e. a high variable value should give a low indicator value)}
 
 \item{break_point}{Numerical vector or single value indicating the value of the variable which should be scaled to 0.6 in the indicator.}
 
@@ -39,7 +43,8 @@ ea_normalise(
 If plot = TRUE return a ggplot comparing normalised and raw values. If plot = False return the numerical vector, a normalised version of \code{vetcor}
 }
 \description{
-A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value between 0 and 1, bound by an upper reference level.
+A function to normalise, or re-scale, a numerical vector such as a condition variable to become a value
+between 0 and 1, bound by an upper and a lower reference level.
 }
 \examples{
 data("ex_polygons")
